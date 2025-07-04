@@ -1,9 +1,9 @@
 {
-  "start": "Hi!\uD83D\uDC4B\\n\\nI'm your math assistant!\uD83D\uDCCA\\nWrite me your problem and I'll try to solve it!",
+  "start": "Hi!\uD83D\uDC4B\n\nI'm your math assistant!\uD83D\uDCCA\nWrite me your problem and I'll try to solve it!",
   "skills": "Skills\uD83E\uDD13",
   "note": "Note\uD83D\uDCC3",
   "information": "Information\uD83E\uDD78",
   "answer": "Answer:",
   "error": "Error",
-  "wrong_vvod": "Incorrect equation.\\n\\nCheck your entry and try again"
+  "wrong_vvod": "Incorrect equation.\n\nCheck your entry and try again"
 }

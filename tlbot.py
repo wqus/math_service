@@ -6,6 +6,8 @@ import math
 import re
 from sympy import Eq, solve, symbols, parse_expr, sin, cos, tan, cot, rad
 import json
+import sqlite3
+
 
 # 1. Загрузка текстовых ресурсов
 def load_texts():
@@ -20,6 +22,57 @@ def load_texts():
         exit(1)
 texts = load_texts()
 bot = telebot.TeleBot(token=TOKEN)
+
+#Создаем БД
+def init_db():
+    conn = sqlite3.connect('bot_data.db')
+    c = conn.cursor()
+
+    # Создаем таблицу пользователей
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 user_id INTEGER,
+                 language TEXT DEFAULT 'RU',
+                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+    conn.commit()
+    conn.close()
+
+
+#Для записи пользователя в БД
+def init_user(user_id: int) -> bool:
+    """
+    Добавляем нового пользователя в БД при первом запуске.
+    Возвращает True, если пользователь создан, False если уже существует.
+    """
+    with sqlite3.connect('bot_data.db') as conn:
+        cursor = conn.cursor()
+        # Проверяем, есть ли пользователь
+        cursor.execute('SELECT 1 FROM users WHERE user_id = ?', (user_id,))
+        if cursor.fetchone():
+            return False  # Пользователь уже есть
+
+        # Создаём нового
+        cursor.execute('''
+        INSERT INTO users (user_id)
+        VALUES (?)
+        ''', (user_id,))
+        return True
+
+def update_user_language(user_id: int, language: str) -> bool:
+    """
+    Обновляет язык пользователя.
+    Возвращает True при успехе, False если пользователя нет.
+    """
+    with sqlite3.connect('bot_data.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+        UPDATE users 
+        SET language = ? 
+        WHERE user_id = ?
+        ''', (language, user_id))
+        return cursor.rowcount > 0  # Были ли обновлены строки? da/net
+# Вызываем при старте бота
+init_db()
 
 # BUTTONS
 #REPLY_BTs
@@ -77,20 +130,22 @@ def solve_inequality(user_input: str, inequality_type: str):
 @bot.message_handler(commands=['start'])
 @bot.message_handler(func=lambda message: message.text.lower() in ['начать', 'привет'])
 def start_reply(message):
-    if
     bot.send_message(message.chat.id, text='Привет!👋\n'
                                            'Пожалуйста выбери язык, на котором тебе будет комфортно общаться:\n\n'
                                            'Hi👋\n'
                                            'Please choose a language:', reply_markup=kb_language)
+    init_user(message.from_user.id)
+
 #HI message, 2 languages
 @bot.callback_query_handler(func=lambda call: True)  
 def call_handler(call):
     user_language = call.data
-    match call.data:  
-        case 'RU':  
-            bot.send_message(call.message.chat.id, "Привет!👋\n\nЯ твой помощник по математике!📊\nНапиши мне свою задачу и я постораюсь её решить!", reply_markup= kb_info[user_language])
+    match call.data:
+        case 'RU':
+            bot.send_message(call.message.chat.id, text=f"{texts['RU']['start']}", reply_markup=kb_info[user_language])
         case 'EN':
-            bot.send_message(call.message.chat.id, "Hi!👋\n\nI'm your math assistant!📊\nWrite me your problem and I'll try to solve it!", reply_markup= kb_info[user_language])
+            bot.send_message(call.message.chat.id, text=f"{texts['EN']['start']}", reply_markup=kb_info[user_language])
+    update_user_language(call.from_user.id, call.data)
 
 # ответ на умения
 @bot.message_handler(commands=['skills'])
@@ -102,11 +157,11 @@ def skills(message):
                                            '3. Неравенства\n\n'
                                            'Также ведется активная разработка и множества другого!🧑🏻‍💻')
 
-
 # ответ на примечание
 @bot.message_handler(commands=['rules'])
 @bot.message_handler(func=lambda message: message.text in 'Примечание📃')
 def primec(message):
+
     bot.send_message(message.chat.id, text='<b>Примечание📃</b>:\n\n'
                                            '   <b>1. Для умножения используется знак "*"</b>\n'
                                            'Примеры записи:\n'
