@@ -1,6 +1,6 @@
 from TOKEN import TOKEN
 import telebot
-from telebot import types
+from telebot import types, apihelper
 import sympy as sp
 import math
 import re
@@ -20,8 +20,12 @@ def load_texts():
     except FileNotFoundError as e:
         print(f"Ошибка загрузки файлов переводов: {e}")
         exit(1)
+
 texts = load_texts()
-bot = telebot.TeleBot(token=TOKEN)
+# Включаем поддержку middleware
+apihelper.ENABLE_MIDDLEWARE = True
+
+bot = telebot.TeleBot(token=TOKEN)#создаем экземпляр бота
 
 #Создаем БД
 def init_db():
@@ -71,6 +75,14 @@ def update_user_language(user_id: int, language: str) -> bool:
         WHERE user_id = ?
         ''', (language, user_id))
         return cursor.rowcount > 0  # Были ли обновлены строки? da/net
+
+def get_user_language(user_id: int) -> str: #take language value
+    with sqlite3.connect('bot_data.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
+        result = cursor.fetchone()
+        return result[0]  # возвращаем язык
+
 # Вызываем при старте бота
 init_db()
 
@@ -121,14 +133,22 @@ def solve_inequality(user_input: str, inequality_type: str):
 
     # Преобразуем решение в красивую строку
     formatted_solution = sp.pretty(solution, use_unicode=True)
-
     return formatted_solution
 
-
 # HAHDLERS
+#middleware, для обработки сообщений и callbacks, после передавать в остальные
+@bot.middleware_handler(update_types=['message', 'callback_query'])
+def inject_language(bot_instance, update):
+    try:
+        if hasattr(update, 'from_user'):
+            update.user_language = get_user_language(update.from_user.id)
+    except Exception as e:
+        print(f"Language error: {e}")
+        update.user_language = 'RU'
+
 #choose language and start
 @bot.message_handler(commands=['start'])
-@bot.message_handler(func=lambda message: message.text.lower() in ['начать', 'привет'])
+@bot.message_handler(func=lambda message: message.text.lower() in ['начать', 'привет', 'hi'])
 def start_reply(message):
     bot.send_message(message.chat.id, text='Привет!👋\n'
                                            'Пожалуйста выбери язык, на котором тебе будет комфортно общаться:\n\n'
@@ -149,50 +169,32 @@ def call_handler(call):
 
 # ответ на умения
 @bot.message_handler(commands=['skills'])
-@bot.message_handler(func=lambda message: message.text in ['Умения🤓'])
+@bot.message_handler(func=lambda message:  message.text in [texts['RU']['skills'], texts['EN']['skills']])
 def skills(message):
-    bot.send_message(message.chat.id, text='Вот все, что я умею решать 📝:\n\n'
-                                           '1. Примеры\n'
-                                           '2. Уравнения с одной переменной\n'
-                                           '3. Неравенства\n\n'
-                                           'Также ведется активная разработка и множества другого!🧑🏻‍💻')
+    match message.user_language:
+        case "EN":
+            bot.send_message(message.chat.id, text= texts['EN']['skills_answer'])
+        case "RU":
+            bot.send_message(message.chat.id, text=texts['RU']['skills_answer'])
 
 # ответ на примечание
 @bot.message_handler(commands=['rules'])
-@bot.message_handler(func=lambda message: message.text in 'Примечание📃')
+@bot.message_handler(func=lambda message: message.text in [texts['RU']['note'], texts['EN']['note']])
 def primec(message):
-
-    bot.send_message(message.chat.id, text='<b>Примечание📃</b>:\n\n'
-                                           '   <b>1. Для умножения используется знак "*"</b>\n'
-                                           'Примеры записи:\n'
-                                           '        5x❌\n'
-                                           '        5 * x✅\n'
-                                           '        4 * 3✅\n\n'
-
-                                           '   <b>2. Для записи степени используется "**" или "^"</b>\n'
-                                           'Примеры записи:\n'
-                                           '       2^4 (2 в 4-ой степени)\n '
-                                           '      x ** 2 (x во 2-ой степени)\n\n'
-
-                                           '   <b>3.При записи уравнений использовать "x"</b>\n'
-                                           'Примеры записи:\n'
-                                           '       5 * a = 10❌\n'
-                                           '       5 * x = 10✅\n\n'
-
-                                           '   <b>4. Градусы для sin, cos, tg, ctg записываются в скобках"</b>\n'
-                                           'Примеры записи:\n'
-                                           '       cos 15 ❌\n'
-                                           '       sin(30)✅\n'
-                                           '       sin(45) + tg(90)✅\n\n'
-                                           '<b>Если бот отправил пустой ответ - это означает, что пример нерешаем</b>', parse_mode='HTML')
-
+    match message.user_language:
+        case "EN":
+            bot.send_message(message.chat.id, text= texts['EN']['note_answer'], parse_mode='HTML')
+        case "RU":
+            bot.send_message(message.chat.id, text=texts['RU']['note_answer'], parse_mode='HTML')
 
 @bot.message_handler(commands=['info'])
-@bot.message_handler(func=lambda message: message.text in ['Информация🥸'])
+@bot.message_handler(func=lambda message: message.text in [texts['RU']['information'], texts['EN']['information']])
 def info(message):
-    bot.send_message(message.chat.id, text=
-    'В будущем будет мощный текст или ваще другая кнопка, просто их мало, а для красоты надо хотя бы 3 иметь💪🏻😈')
-
+    match message.user_language:
+        case "EN":
+            bot.send_message(message.chat.id, text= texts['EN']['information_answer'], parse_mode='HTML')
+        case "RU":
+            bot.send_message(message.chat.id, text=texts['RU']['information_answer'], parse_mode='HTML')
 
 @bot.message_handler(func=lambda message: '=' in message.text)
 def solve_equation_or_expression(message):
@@ -222,16 +224,24 @@ def solve_equation_or_expression(message):
             formatted_res = ('; '.join(
                 [f'x = {str(round(sol, 3)).rstrip("0").rstrip(".") if "." in str(sol) else str(sol)}' for sol in
                  result]))
-            bot.send_message(message.chat.id, text=f'Ответ: {formatted_res}')
+            match message.user_language: #отправляем ответ
+                case "EN":
+                    bot.send_message(message.chat.id, text=formatted_res)
+                case "RU":
+                    bot.send_message(message.chat.id, text=formatted_res)
+        else: #иначе сообщаем о некорректном вводе
+            match message.user_language:
+                case "EN":
+                    bot.send_message(message.chat.id, text=texts['EN']['wrong_input'])
+                case "RU":
+                    bot.send_message(message.chat.id, text=texts['RU']['wrong_input'])
 
-        else:
-            bot.send_message(message.chat.id,
-                             text='Некорректное уравнение.\n\n Проверь свою запись и попробуй еще раз!')
-
-    except Exception as e:
-        bot.send_message(message.chat.id,
-                         text=f'Произошла ошибка:(\n\nОшибка(для разработчика, в будущем этого не будет): {e} ')
-
+    except Exception as e: #выводим в сообщение об ошибке
+        match message.user_language:
+            case "EN":
+                bot.send_message(message.chat.id, text=f'{texts['EN']['error']}{e}')
+            case "RU":
+                bot.send_message(message.chat.id, text=f'{texts['EN']['error']}{e}')
 
 # Хендлер для неравенств
 @bot.message_handler(func=lambda message: '<' in message.text or '>' in message.text or '>=' in message.text or '<=' in message.text)
@@ -248,12 +258,14 @@ def solve_inequality(message: types.Message):
 
         #в красивую строку
         formatted_solution = sp.pretty(solution, use_unicode=True)
+        bot.send_message(message.chat.id, text=f'x ∈ {formatted_solution}')
 
-        bot.send_message(message.chat.id, text='Ответ: x ∈ ' + formatted_solution)
-
-    except Exception as e:
-        bot.send_message(message.chat.id, text=f'Произошла ошибка\n\n{e}(для разраба)')
-
+    except Exception as e: #выводим в сообщение об ошибке
+        match message.user_language:
+            case "EN":
+                bot.send_message(message.chat.id, text=f'{texts['EN']['error']}{e}')
+            case "RU":
+                bot.send_message(message.chat.id, text=f'{texts['EN']['error']}{e}')
 
 # Хендлер для остальных сообщений
 @bot.message_handler()
@@ -267,9 +279,16 @@ def handle_expression(message: types.Message):
         result = eval(user_input)
 
         formatted_res = str(round(result, 3)).rstrip('0').rstrip('.') if '.' in str(result) else str(result)
-        bot.send_message(message.chat.id, text=f'Ответ: {formatted_res}')
+        match message.user_language:  # отправляем ответ
+            case "EN":
+                bot.send_message(message.chat.id, text=formatted_res)
+            case "RU":
+                bot.send_message(message.chat.id, text=formatted_res)
 
     except Exception as e:
-        bot.send_message(message.chat.id,
-                         text=f'Произошла ошибка:(\n\n\Ошибка(для разработчика, в будущем этого не будет): {e} ')
+        match message.user_language:
+            case "EN":
+                bot.send_message(message.chat.id, text=f'{texts['EN']['error']}{e}')
+            case "RU":
+                bot.send_message(message.chat.id, text=f'{texts['EN']['error']}{e}')
 bot.polling()
