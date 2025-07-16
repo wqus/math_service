@@ -4,8 +4,10 @@
   "skills_answer": "That's all I know how to solve\uD83D\uDCDD:\n\n1. Examples\n2. Equations with one variable\n3. Inequalities\n\nThere is also an active development of many other things!\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB",
   "note": "Note\uD83D\uDCC3",
   "note_answer": "<b>Note\uD83D\uDCC3</b>:\n\n<b>1. The \"*\" sign is used for multiplication</b>\nInput examples:\n5x❌\n5 * x✅\n4 * 3✅\n\n<b>2. To write the degree, use \"**\" or \"^\"</b>\nInput examples:\n 2^4 (2 to the 4th power)\n x ** 2 (x to the 2nd degree)\n\n<b>3.When writing equations, use \"x\"</b>\nInput examples:\n5 * a = 10❌\n5 * x = 10✅\n\n<b>4. Degrees for sin, cos, tg, ctg are written in parentheses</b>\nInput examples:\ncos 15 ❌\nsin(30)✅\nsin(45) + tg(90)✅\n\n<b>If the bot sent an empty response, it means that the example is unsolvable</b>",
-  "information": "Information\uD83E\uDD78",
-  "information_answer": "In the future, there will be a powerful text or another button, now there are few of them, but for beauty you need to have at least 3\uD83D\uDCAA\uD83C\uDFFB\uD83D\uDE08",
+  "plot": "Plot\uD83D\uDCC8",
+  "plot_message": "📝Enter a function to plot:\n\nSupported functions:\n• sin(x), cos(x), tan(x), cot(x)\n• sqrt(x), log(x), exp(x)\n• abs(x), factorial(x)\n\nExamples:\n• <code>x**2</code>\n• <code>sin(x) + 3</code>\n• <code>2*x - 5</code>",
+  "plot_caption": "📈 Function plot: <code>{original_text}</code>\nRange: [{x_min}, {x_max}]\n\n",
+  "plot_try_again": "✏️ Please enter the function again:",
   "error": "An error has occurred:(\n\nError (for the developer, this won't happen in the future):\n",
   "wrong_input": "Incorrect equation.\n\nCheck your entry and try again"
 }
