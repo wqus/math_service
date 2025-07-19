@@ -80,48 +80,48 @@ async def update_user_language(user_id: int, language: str) -> bool:
     Возвращает True при успехе, False если пользователя нет или возникновении ошибки
     """
     try:
-        with sqlite3.connect('bot_data.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
+        async with aiosqlite.connect('bot_data.db') as conn:
+            cursor = await conn.cursor()
+            await cursor.execute('''
             UPDATE users 
             SET language = ? 
             WHERE user_id = ?
             ''', (language, user_id))
-            return cursor.rowcount > 0  # Были ли обновлены строки? da/net
-    except sqlite3.Error as e:
+            return await cursor.rowcount > 0  # Были ли обновлены строки? da/net
+    except aiosqlite.Error as e:
         print(f"Database error: {e}")
         return False
 
-def update_user_state(user_id: int, state: str) -> bool:
+async def update_user_state(user_id: int, state: str) -> bool:
     """
     Обновляет состояние пользователя .
     Возвращает True при успехе, False если пользователя нет или возникновении ошибки.
     """
     try:
-        with sqlite3.connect('bot_data.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
+        async with aiosqlite.connect('bot_data.db') as conn:
+            cursor = await conn.cursor()
+            await cursor.execute('''
             UPDATE users 
             SET user_states = ? 
             WHERE user_id = ?
             ''', (state, user_id))
-            return cursor.rowcount > 0
-    except sqlite3.Error as e:
+            return await cursor.rowcount > 0
+    except aiosqlite.Error as e:
         print(f"Database error: {e}")
         return False
 
-def get_user_language(user_id: int) -> str: #take language value
-    with sqlite3.connect('bot_data.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
-        result = cursor.fetchone()
+async def get_user_language(user_id: int) -> str: #take language value
+    async with aiosqlite.connect('bot_data.db') as conn:
+        cursor = await conn.cursor()
+        await cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
+        result = await cursor.fetchone()
         return result[0]  # возвращаем язык
 
-def get_user_state(user_id: int) -> str: #take state value
-    with sqlite3.connect('bot_data.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT user_states FROM users WHERE user_id = ?', (user_id,))
-        result = cursor.fetchone()
+async def get_user_state(user_id: int) -> str: #take state value
+    async with aiosqlite.connect('bot_data.db') as conn:
+        cursor = await conn.cursor()
+        await cursor.execute('SELECT user_states FROM users WHERE user_id = ?', (user_id,))
+        result = await cursor.fetchone()
         return result[0]  # return state value
 
 # Вызываем при старте бота
