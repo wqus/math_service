@@ -1,19 +1,23 @@
 from TOKEN import TOKEN
-from aiogram import Bot, Dispatcher, types, filters
-import aiogram
-import telebot
-from telebot import types, apihelper
+from aiogram import Bot, Dispatcher, types, F, Router, BaseMiddleware
+from aiogram.methods import SendMessage
+from aiogram.filters import CommandStart
+import asyncio
 import sympy as sp
 import re
 from sympy import Eq, solve, symbols, parse_expr
 from sympy.parsing.sympy_parser import standard_transformations, implicit_multiplication, convert_xor
 import json
-import sqlite3
+import aiosqlite
 import matplotlib
+
+from middlwares import Inject_language
+
 matplotlib.use('Agg')  # Используем неинтерактивный бэкенд для matplotlib
 import matplotlib.pyplot as plt
 import io
 import numpy as np
+import middlewares
 # 1. Загрузка текстовых ресурсов
 def load_texts():
     try:
@@ -26,54 +30,51 @@ def load_texts():
         print(f"Ошибка загрузки файлов переводов: {e}")
         exit(1)
 
-texts = load_texts()
+#texts = load_texts()
 
 # Кастомные трансформации для парсера
 transformations = (
     standard_transformations + (implicit_multiplication, convert_xor))
 
-# Включаем поддержку middleware
-apihelper.ENABLE_MIDDLEWARE = True
-
-bot = telebot.TeleBot(token=TOKEN)#создаем экземпляр бота
-
+bot = Bot(token=TOKEN)#создаем экземпляр бота
+dp = Dispatcher()
+router = Router()
+dp.include_router(router)
 #Создаем БД
-def init_db():
-    conn = sqlite3.connect('bot_data.db')
-    c = conn.cursor()
+async def init_db():
+    async with aiosqlite.connect('bot_data.db') as conn:
+        # Создаем таблицу пользователей
+        await conn.execute('''CREATE TABLE IF NOT EXISTS users (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     user_id INTEGER,
+                     language TEXT DEFAULT 'RU',
+                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                     user_states INTEGER DEFAULT 0)''')
+        await conn.commit()
 
-    # Создаем таблицу пользователей
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
-                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 user_id INTEGER,
-                 language TEXT DEFAULT 'RU',
-                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                 user_states INTEGER DEFAULT 0)''')
-    conn.commit()
-    conn.close()
-
-user_states = {}
 #Для записи пользователя в БД
-def init_user(user_id: int) -> bool:
+async def init_user(user_id: int) -> bool:
     """
     Добавляем нового пользователя в БД при первом запуске.
     Возвращает True, если пользователь создан, False если уже существует.
     """
-    with sqlite3.connect('bot_data.db') as conn:
-        cursor = conn.cursor()
+    async with aiosqlite.connect('bot_data.db') as conn:
+        cursor = await conn.cursor()
         # Проверяем, есть ли пользователь
-        cursor.execute('SELECT 1 FROM users WHERE user_id = ?', (user_id,))
-        if cursor.fetchone():
+        await cursor.execute('SELECT 1 FROM users WHERE user_id = ?', (user_id,))
+        if await cursor.fetchone():
             return False  # Пользователь уже есть
 
         # Создаём нового
-        cursor.execute('''
+        await cursor.execute('''
         INSERT INTO users (user_id)
         VALUES (?)
         ''', (user_id,))
+        await conn.commit()
+        cursor.close()
         return True
 
-def update_user_language(user_id: int, language: str) -> bool:
+async def update_user_language(user_id: int, language: str) -> bool:
     """
     Обновляет язык пользователя.
     Возвращает True при успехе, False если пользователя нет или возникновении ошибки
@@ -124,7 +125,6 @@ def get_user_state(user_id: int) -> str: #take state value
         return result[0]  # return state value
 
 # Вызываем при старте бота
-init_db()
 
 # BUTTONS
 #REPLY_BTs
@@ -138,14 +138,14 @@ english_lan_bt = types.InlineKeyboardButton(text='English🇬🇧', callback_dat
 
 # KEY BOARDS
 #REPLY_KBs
+"""
 kb_info = {
     'RU': types.ReplyKeyboardMarkup(resize_keyboard=True).add(texts['RU']['skills'], texts['RU']['note']).row(texts['RU']['plot']),
     'EN': types.ReplyKeyboardMarkup(resize_keyboard=True).add(texts['EN']['skills'], texts['EN']['note']).row(texts['EN']['plot'])
 }
-
+"""
 #INLINE_KBs
-kb_language = types.InlineKeyboardMarkup(row_width=2)
-kb_language.add(russian_lan_bt, english_lan_bt)
+kb_language = types.InlineKeyboardMarkup(inline_keyboard = [[russian_lan_bt, english_lan_bt]])
  
 # Функция для замены синусов и т.п
 def zamena(x):
@@ -328,25 +328,19 @@ def generate_plot(message, f_numpy, expr_str: str, x_range: tuple = (-10, 10)) -
     return buf
 # HAHDLERS
 #middleware, для обработки сообщений и callbacks, после передавать в остальные
-@bot.middleware_handler(update_types=['message', 'callback_query'])
-def inject_language(bot_instance, update):
-    try:
-        if hasattr(update, 'from_user'):
-            update.user_language = get_user_language(update.from_user.id)
-    except Exception as e:
-        print(f"Language error: {e}")
-        update.user_language = 'RU'
+middleware = Inject_language(db_path="bot_data.db")
+dp.message.middleware(middleware)
 
 #choose language and start
-@bot.message_handler(commands=['start'])
-@bot.message_handler(func=lambda message: message.text.lower() in ['начать', 'привет', 'hi'])
-def start_reply(message):
-    bot.send_message(message.chat.id, text='Привет!👋\n'
+@router.message(CommandStart())
+@router.message(F.text.lower().in_(["привет", "начать", "hi"]))
+async def start_reply(message: types.Message):
+    await message.answer(text='Привет!👋\n'
                                            'Пожалуйста выбери язык, на котором тебе будет комфортно общаться:\n\n'
                                            'Hi👋\n'
                                            'Please choose a language:', reply_markup=kb_language)
-    init_user(message.from_user.id)
-
+    await init_user(message.from_user.id)
+"""
 #HI message, 2 languages
 @bot.callback_query_handler(func=lambda call: True)  
 def call_handler(call):
@@ -463,7 +457,7 @@ def start_plot(message):
     bot.register_next_step_handler(msg, process_plot)
 
 # Хендлер для остальных сообщений
-@bot.message_handler()
+@router.message()
 def handle_expression(message: types.Message):
     try:
         # Преобразовываем выражение
@@ -486,4 +480,11 @@ def handle_expression(message: types.Message):
                 bot.send_message(message.chat.id, text=f'{texts['EN']['error']}{e}')
             case "RU":
                 bot.send_message(message.chat.id, text=f'{texts['RU']['error']}{e}')
-bot.polling()
+  """
+async def main():
+    await init_db()
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
