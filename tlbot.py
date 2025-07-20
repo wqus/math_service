@@ -1,7 +1,8 @@
 from TOKEN import TOKEN
 from aiogram import Bot, Dispatcher, types, F, Router, BaseMiddleware
-from aiogram.methods import SendMessage
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 import asyncio
 import sympy as sp
 import re
@@ -9,6 +10,7 @@ from sympy import Eq, solve, symbols, parse_expr
 from sympy.parsing.sympy_parser import standard_transformations, implicit_multiplication, convert_xor
 import json
 import aiosqlite
+import aiofiles
 import matplotlib
 
 from middlwares import Inject_language
@@ -18,20 +20,23 @@ import matplotlib.pyplot as plt
 import io
 import numpy as np
 import middlewares
+class PlotStates(StatesGroup):#класс состояний для графика
+    waiting_for_function = State()
+
 # 1. Загрузка текстовых ресурсов
-def load_texts():
+async def load_texts():
     try:
-        with open('text_ru.json', 'r', encoding='utf-8') as f:
-            texts_ru = json.load(f)
-        with open('text_en.json', 'r', encoding='utf-8') as f:
-            texts_en = json.load(f)
+        async with aiofiles.open('text_ru.json', 'r', encoding='utf-8') as f:
+            ru_content = await f.read()
+            texts_ru = json.loads(ru_content)
+        async with aiofiles.open('text_en.json', 'r', encoding='utf-8') as f:
+            en_content = await f.read()
+            texts_en = json.loads(en_content)
         return {'RU': texts_ru, 'EN': texts_en}
     except FileNotFoundError as e:
         print(f"Ошибка загрузки файлов переводов: {e}")
         exit(1)
-
-#texts = load_texts()
-
+texts = asyncio.run(load_texts())
 # Кастомные трансформации для парсера
 transformations = (
     standard_transformations + (implicit_multiplication, convert_xor))
@@ -109,13 +114,6 @@ async def update_user_state(user_id: int, state: str) -> bool:
     except aiosqlite.Error as e:
         print(f"Database error: {e}")
         return False
-
-async def get_user_language(user_id: int) -> str: #take language value
-    async with aiosqlite.connect('bot_data.db') as conn:
-        cursor = await conn.cursor()
-        await cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
-        result = await cursor.fetchone()
-        return result[0]  # возвращаем язык
 
 async def get_user_state(user_id: int) -> str: #take state value
     async with aiosqlite.connect('bot_data.db') as conn:
@@ -222,29 +220,31 @@ def safe_parse_to_numpy(expr: str):
     return f_numpy
 
 x_range = (-10,10)
-def process_plot(message):
-    chat_id = message.chat.id
+#Хендлер обработки запросов по состоянию PlotStates.waiting_for_function
+@router.message(PlotStates.waiting_for_function)
+async def process_plot(message: types.Message, state: FSMContext, user_language: str):
     try:
+        """
         # Проверяем состояние ожидания ввода функции
-        if get_user_state(chat_id) != 'waiting_function':
+        if await get_user_state(chat_id) != 'waiting_function':
             match message.user_language:
                 case "EN":
-                    return bot.send_message(chat_id, text=f"Error")
+                    return await message.answer(text=f"Error")
                 case "RU":
-                    return bot.send_message(chat_id, text=f"Ошибка")
-
+                    return await message.answer(text=f"Ошибка")
+        """
         text = message.text.strip()
         original_text = text
-        x_range = (-10, 10)
 
         # Парсим выражение в безопасную NumPy-функцию
         f_numpy = safe_parse_to_numpy(text)
 
         # Генерируем график
-        plot_buf = generate_plot(message, f_numpy, original_text, x_range)
-
+        plot_buf = generate_plot(f_numpy, original_text, user_language, x_range)
+        raw_bytes = plot_buf.read()
+        photo_file = types.BufferedInputFile(raw_bytes, "plot.png")
         # Отправляем результат
-        match message.user_language:
+        match user_language:
             case "EN":
                 caption_template = texts['EN']['plot_caption']
                 caption_filled = caption_template.format(
@@ -252,7 +252,7 @@ def process_plot(message):
                     x_min=x_range[0],
                     x_max=x_range[1]
                 )
-                bot.send_photo(chat_id, plot_buf, caption=caption_filled, parse_mode='HTML')
+                await message.answer_photo(photo = photo_file, caption=caption_filled, parse_mode='HTML')
             case "RU":
                 caption_template = texts['RU']['plot_caption']
                 caption_filled = caption_template.format(
@@ -260,32 +260,29 @@ def process_plot(message):
                     x_min=x_range[0],
                     x_max=x_range[1]
                 )
-                bot.send_photo(chat_id, plot_buf, caption=caption_filled, parse_mode='HTML')
+                await message.answer_photo(photo = photo_file, caption=caption_filled, parse_mode='HTML')
+        await state.clear()
+        return None
     except Exception as e:
         # Обработка сообщений об ошибках
         error_msg = str(e)
-        match message.user_language:
+        match user_language:
             case "EN":
-                bot.send_message(chat_id, text=f"Error: {error_msg}")
+                await message.answer(text=f"Error: {error_msg}")
             case "RU":
-                bot.send_message(chat_id, text=f"Ошибка: {error_msg}")
+                await message.answer(text=f"Ошибка: {error_msg}")
         print(e)
         # Запрашиваем ввод заново
-        match message.user_language:
+        match user_language:
             case "EN":
-                msg = bot.send_message(chat_id, text=texts["EN"][f"plot_try_again"])
+                await message.answer(text=texts["EN"][f"plot_try_again"])
             case "RU":
-                msg = bot.send_message(chat_id, text=texts["RU"][f"plot_try_again"])
-        bot.register_next_step_handler(msg, process_plot)
-        return
-    finally:
-        # Сбрасываем состояние пользователя
-        update_user_state(chat_id, "nothing")
+                await message.answer(text=texts["RU"][f"plot_try_again"])
+        return None
 
 
 # Функция генерации графика
-
-def generate_plot(message, f_numpy, expr_str: str, x_range: tuple = (-10, 10)) -> io.BytesIO:
+def generate_plot(f_numpy, expr_str: str, user_language: str, x_range: tuple = (-10, 10)) -> io.BytesIO:
     # Проверка корректности диапазона
     if x_range[1] <= x_range[0]:
         raise ValueError("Некорректный диапазон значений X")
@@ -311,7 +308,7 @@ def generate_plot(message, f_numpy, expr_str: str, x_range: tuple = (-10, 10)) -
         ax.set_yticks(np.arange(-5, 6, 1))
 
     ax.grid(True, linestyle='--', alpha=0.7)
-    match message.user_language:
+    match user_language:
         case "EN":
             ax.set_title(f'Plot: {expr_str}', fontsize=14)
         case "RU":
@@ -443,18 +440,17 @@ def solve_inequality(message: types.Message):
                 bot.send_message(message.chat.id, text=f'{texts['EN']['error']}{e}')
             case "RU":
                 bot.send_message(message.chat.id, text=f'{texts['RU']['error']}{e}')
-
+"""
 # Запрос на график
-@bot.message_handler(commands=['plot', 'график'])
-@bot.message_handler(func=lambda message: message.text in ['График📈', 'Plot📈'])
-def start_plot(message):
-    match message.user_language:
+router.message(Command(commands=["plot", "график"]))
+@router.message(F.text.lower().in_(["график📈", "график", "plot📈", "plot"]))
+async def start_plot(message: types.Message, user_language: str, state: FSMContext):
+    match user_language:
         case "EN":
-            msg = bot.send_message(message.chat.id, text=texts['EN']['plot_message'], parse_mode='HTML')
+            msg = await message.answer(text=texts['EN']['plot_message'], parse_mode='HTML')
         case "RU":
-            msg = bot.send_message(message.chat.id, text=texts['RU']['plot_message'], parse_mode='HTML')
-    update_user_state(message.from_user.id, 'waiting_function')
-    bot.register_next_step_handler(msg, process_plot)
+            msg = await message.answer(text=texts['RU']['plot_message'], parse_mode='HTML')
+    await state.set_state(PlotStates.waiting_for_function)
 
 # Хендлер для остальных сообщений
 @router.message()
@@ -480,8 +476,8 @@ def handle_expression(message: types.Message):
                 bot.send_message(message.chat.id, text=f'{texts['EN']['error']}{e}')
             case "RU":
                 bot.send_message(message.chat.id, text=f'{texts['RU']['error']}{e}')
-  """
-async def main():
+
+async def main(): #функция при запуске
     await init_db()
     await dp.start_polling(bot)
 

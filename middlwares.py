@@ -12,7 +12,7 @@ class Inject_language(BaseMiddleware):
     def __init__(self, db_path):
         self.db_path = db_path
     async def _get_user_language(self, user_id: int) -> str:  # take language value
-        with aiosqlite.connect('bot_data.db') as conn:
+        async with aiosqlite.connect('bot_data.db') as conn:
             cursor = await conn.cursor()
             await cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
             result = await cursor.fetchone()
