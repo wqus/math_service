@@ -1,3 +1,4 @@
+from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import CallbackQuery
 
 from TOKEN import TOKEN
@@ -6,6 +7,8 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 import asyncio
+import redis.asyncio as redis
+
 import sympy as sp
 import re
 from sympy import Eq, solve, symbols, parse_expr
@@ -17,7 +20,7 @@ import matplotlib
 
 from middlwares import Inject_language
 
-matplotlib.use('Agg')  # Используем неинтерактивный бэкенд для matplotlib
+#matplotlib.use('Agg')  # Используем неинтерактивный бэкенд для matplotlib
 import matplotlib.pyplot as plt
 import io
 import numpy as np
@@ -38,14 +41,31 @@ async def load_texts():
     except FileNotFoundError as e:
         print(f"Ошибка загрузки файлов переводов: {e}")
         exit(1)
+
 texts = asyncio.run(load_texts())
 # Кастомные трансформации для парсера
 transformations = (
     standard_transformations + (implicit_multiplication, convert_xor))
 
+def on_startup(): #on startup
+    global redis_client
+    redis_c = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True, max_connections=25,
+                               health_check_interval=30, socket_timeout=4)
+    #redis_c.ping()
+    return redis_c
+    #await init_db()
+    #matplotlib.use('Agg')
+redis_client = on_startup()
+async def close_redis(): #on_shutdown
+    global redis_client
+    if redis_client:
+        await redis_client.close()
+        redis_client = None
 bot = Bot(token=TOKEN)#создаем экземпляр бота
-dp = Dispatcher()
+dp = Dispatcher(storage = RedisStorage(redis = redis_client))
+print(type(redis_client))
 router = Router()
+
 #middleware, для обработки сообщений и callbacks, после передавать в остальные
 middleware = Inject_language(db_path="bot_data.db")
 dp.message.middleware(middleware)
@@ -447,15 +467,6 @@ x_range = (-10,10)
 @router.message(PlotStates.waiting_for_function)
 async def process_plot(message: types.Message, state: FSMContext, user_language: str):
     try:
-        """ #заменить на тоже самое для таблицы states, перед этим создать ее
-        # Проверяем состояние ожидания ввода функции
-        if await get_user_state(chat_id) != 'waiting_function':
-            match message.user_language:
-                case "EN":
-                    return await message.answer(text=f"Error")
-                case "RU":
-                    return await message.answer(text=f"Ошибка")
-        """
         text = message.text.strip()
         original_text = text
 
@@ -523,9 +534,10 @@ async def handle_expression(message: types.Message, user_language: str):
                 await message.answer(text=f'{texts['RU']['error']}{e}')
 
 async def main(): #функция при запуске
-    await init_db()
     await dp.start_polling(bot)
+    await init_db()
+    matplotlib.use('Agg')
+    dp.shutdown.register(close_redis)
 
 if __name__ == "__main__":
     asyncio.run(main())
-
