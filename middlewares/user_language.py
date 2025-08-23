@@ -1,10 +1,7 @@
-import aiogram
 from aiogram import BaseMiddleware
-from aiogram.types import Message, CallbackQuery, Update
-from typing import Callable, Any, Dict, Awaitable
 import aiosqlite
 
-class Inject_language(BaseMiddleware):
+class InjectLanguage(BaseMiddleware):
     """
     Получаем данные о языке интерфейса пользователя.
     В коде можем воспользоваться с помощью .user_lanuage
