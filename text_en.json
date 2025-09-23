@@ -9,5 +9,8 @@
   "plot_caption": "📈 Function plot: <code>{original_text}</code>\nRange: [{x_min}, {x_max}]\n\n",
   "plot_try_again": "✏️ Please enter the function again:",
   "error": "An error has occurred:(\n\nError (for the developer, this won't happen in the future):\n",
-  "wrong_input": "Incorrect equation.\n\nCheck your entry and try again"
+  "wrong_input": "Incorrect equation.\n\nCheck your entry and try again",
+  "answer": "<b>\tAnswer</b>",
+  "history": "History\uD83D\uDCC3",
+  "history_answer": "<b>Input history:</b>\uD83D\uDCDD"
 }

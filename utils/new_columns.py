@@ -35,4 +35,5 @@ def check_and_add_column(db_path, table, column, ctype="TEXT", default_value=Non
         return False
     finally:
         conn.close()
+
 check_and_add_column("../bot_data.db", "users", "user_states", "TEXT", default_value="nothing")

@@ -3,8 +3,10 @@ import sympy as sp
 import numpy as np
 import io
 import matplotlib.pyplot as plt
+from Scripts.activate_this import prev_length
 from sympy import parse_expr
 from sympy.parsing.sympy_parser import standard_transformations, implicit_multiplication, convert_xor
+import aiosqlite
 
 transformations = (
     standard_transformations + (implicit_multiplication, convert_xor))
@@ -177,3 +179,78 @@ def generate_plot(f_numpy, expr_str: str, user_language: str) -> io.BytesIO:
     plt.close(fig)
     buf.seek(0)
     return buf
+
+async def save_user_message(user_id, input_message, output_message):
+    async with aiosqlite.connect('users_history.db') as conn:
+        await conn.execute('INSERT INTO history(user_id, input_message, output_message)'
+                     'VALUES (?, ?, ?)', (user_id, input_message, output_message))
+        await conn.commit()
+        await conn.close()
+
+
+async def requests_history(user_id, cursor=None, page_size=10, direction="next"):
+    query = "SELECT id, input_message, output_message, created_at FROM history WHERE user_id = ?"
+    values = [user_id]
+
+    # курсорная навигация
+    if cursor:
+        print(f"CURSOR: {cursor}")
+        cursor_id, cursor_created_at = cursor
+        if direction == "next":
+            query += " AND (created_at < ? OR (created_at = ? AND id < ?))"
+        elif direction == "prev":
+            query += " AND (created_at > ? OR (created_at = ? AND id > ?))"
+        values.extend([cursor_created_at, cursor_created_at, cursor_id])
+
+    if direction == "prev":
+        query += " ORDER BY created_at, id LIMIT ?"
+    else: query += " ORDER BY created_at DESC, id DESC LIMIT ?"
+    values.append(page_size)
+
+    async with aiosqlite.connect("users_history.db") as conn:
+        conn.row_factory = aiosqlite.Row
+        rows = await conn.execute_fetchall(query, values)
+        for row in rows:
+            print(row["input_message"])
+
+    prev_cursor, next_cursor = None, None
+
+    if rows:
+        if direction == "prev":
+            first = rows[-1]
+            last = rows[0]
+        elif direction == "next":
+            first = rows[0]
+            last = rows[-1]
+
+        async with aiosqlite.connect("users_history.db") as conn:
+            conn.row_factory = aiosqlite.Row
+
+            # проверяем наличие записей новее (для prev-кнопки)
+            newer = await conn.execute_fetchall(
+                """
+                SELECT 1 FROM history
+                WHERE user_id = ?
+                  AND (created_at > ? OR (created_at = ? AND id > ?))
+                LIMIT 1
+                """,
+                (user_id, first["created_at"], first["created_at"], first["id"])
+            )
+            if newer:
+                prev_cursor = (first["id"], first["created_at"])
+                print(f"newer updated: {prev_cursor}")
+
+            # проверяем наличие записей старее (для next-кнопки)
+            older = await conn.execute_fetchall(
+                """
+                SELECT 1 FROM history
+                WHERE user_id = ?
+                  AND (created_at < ? OR (created_at = ? AND id < ?))
+                LIMIT 1
+                """,
+                (user_id, last["created_at"], last["created_at"], last["id"])
+            )
+            if older:
+                next_cursor = (last["id"], last["created_at"])
+
+    return rows, next_cursor, prev_cursor

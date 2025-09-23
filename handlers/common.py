@@ -20,44 +20,33 @@ async def start_reply(message: types.Message):
                                            'Please choose a language:', reply_markup=kb_language)
     await init_user(message.from_user.id)
 
+# ответ на умения
+@router.message(Command(commands=["skills", "умения"]))
+@router.message(F.text.in_([texts['language:RU']['skills'], "умения", texts['language:EN']['skills'], "skills"]))
+@router.message(F.text.lower().in_(["умения", "skills", "возможности", "способности"]))
+async def skills(message: types.Message, user_language: str):
+    await message.answer(text=texts[user_language]['skills_answer'])
+
 #HI message, 2 languages
-language_array = ['RU', 'EN']
-@router.callback_query()
+language_array = ['language:RU', 'language:EN']
+@router.callback_query(F.data.startswith("language:"))
 async def call_handler(callback: CallbackQuery):
     match callback:
         case _ if callback.data in language_array:
-            await callback.answer()
             await callback.message.answer(text=f"{texts[callback.data]['start']}", reply_markup=kb_info[callback.data])
             await update_user_language(callback.from_user.id, callback.data)
-# ответ на умения
-@router.message(Command(commands=["skills", "умения"]))
-@router.message(F.text.in_([texts['RU']['skills'], "умения", texts['EN']['skills'], "skills"]))
-@router.message(F.text.lower().in_(["умения", "skills", "возможности", "способности"]))
-async def skills(message: types.Message, user_language: str):
-    match user_language:
-        case "EN":
-            await message.answer(text= texts['EN']['skills_answer'])
-        case "RU":
-            await message.answer(text=texts['RU']['skills_answer'])
+            await callback.answer()
 
 # ответ на примечание
 @router.message(Command(commands=["rules", "примечание"]))
-@router.message(F.text.in_([texts['RU']['note'], texts['EN']['note']]))
+@router.message(F.text.in_([texts['language:RU']['note'], texts['language:EN']['note']]))
 @router.message(F.text.lower().in_(["примечание", "rules", "правила", "note"]))
 async def primec(message: types.Message, user_language: str):
-    match user_language:
-        case "EN":
-            await message.answer(text= texts['EN']['note_answer'], parse_mode='HTML')
-        case "RU":
-            await message.answer(text=texts['RU']['note_answer'], parse_mode='HTML')
+    await message.answer(text=texts[user_language]['note_answer'], parse_mode='HTML')
 
 # Запрос на график
 @router.message(Command(commands=["plot", "график"]))
 @router.message(F.text.lower().in_(["график📈", "график", "plot📈", "plot"]))
 async def start_plot(message: types.Message, user_language: str, state: FSMContext):
-    match user_language:
-        case "EN":
-            await message.answer(text=texts['EN']['plot_message'], parse_mode='HTML')
-        case "RU":
-            await message.answer(text=texts['RU']['plot_message'], parse_mode='HTML')
+    await message.answer(text=texts[user_language]['plot_message'], parse_mode='HTML')
     await state.set_state(PlotStates.waiting_for_function)
