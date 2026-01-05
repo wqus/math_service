@@ -13,7 +13,7 @@ router = Router()
 
 
 @router.message(Command("history"))
-@router.message(F.text.lower().in_(["история", "history"]))
+@router.message(F.text.lower().in_(["история", "history", "История📃"]))
 async def user_history(message: types.Message, user_language: str = "RU"):
     rows, next_cursor, prev_cursor = await requests_history(message.from_user.id)
 
