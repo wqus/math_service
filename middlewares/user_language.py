@@ -1,19 +1,19 @@
 from aiogram import BaseMiddleware
-import aiosqlite
+from sqlalchemy import text
+from startup import engine
 
 class InjectLanguage(BaseMiddleware):
     """
     Получаем данные о языке интерфейса пользователя.
-    В коде можем воспользоваться с помощью .user_lanuage
+    В коде можем воспользоваться с помощью .user_language
     """
     def __init__(self, db_path):
         self.db_path = db_path
     async def _get_user_language(self, user_id: int) -> str:  # take language value
-        async with aiosqlite.connect(self.db_path) as conn:
-            cursor = await conn.cursor()
-            await cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
-            result = await cursor.fetchone()
-            return result[0] if result else "RU"  # возвращаем язык
+        async with engine.connect() as conn:
+            result =  await conn.execute(text('SELECT language FROM users WHERE user_id = :user_id'), {'user_id': user_id})
+            lang = result.first()
+            return lang[0] if lang else "RU"  # возвращаем язык
     async def __call__(self, handler, event, data):
         try:
             if hasattr(event, 'from_user'):

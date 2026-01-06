@@ -4,10 +4,11 @@ import numpy as np
 import io
 import matplotlib.pyplot as plt
 from Scripts.activate_this import prev_length
+from fontTools.merge.util import first
 from sympy import parse_expr
 from sympy.parsing.sympy_parser import standard_transformations, implicit_multiplication, convert_xor
-import aiosqlite
-
+from startup import engine
+from sqlalchemy import text
 transformations = (
     standard_transformations + (implicit_multiplication, convert_xor))
 
@@ -181,76 +182,61 @@ def generate_plot(f_numpy, expr_str: str, user_language: str) -> io.BytesIO:
     return buf
 
 async def save_user_message(user_id, input_message, output_message):
-    async with aiosqlite.connect('users_history.db') as conn:
-        await conn.execute('INSERT INTO history(user_id, input_message, output_message)'
-                     'VALUES (?, ?, ?)', (user_id, input_message, output_message))
-        await conn.commit()
-        await conn.close()
-
+    async with engine.begin() as conn:
+        await conn.execute(
+            text('''INSERT INTO history(user_id, input_message, output_message)
+                     VALUES (:user_id, :input_message, :output_message)'''), {"user_id": user_id, "input_message": input_message, "output_message": output_message}
+        )
 
 async def requests_history(user_id, cursor=None, page_size=10, direction="next"):
-    query = "SELECT id, input_message, output_message, created_at FROM history WHERE user_id = ?"
-    values = [user_id]
+    query = "SELECT id, input_message, output_message, created_at FROM history WHERE user_id = :user_id"
+    params = {"user_id": user_id}
 
     # курсорная навигация
     if cursor:
-        print(f"CURSOR: {cursor}")
         cursor_id, cursor_created_at = cursor
+        params["created_at"] = cursor_created_at
+        params["id"] = cursor_id
+        print(f"CURSOR: {cursor}")
         if direction == "next":
-            query += " AND (created_at < ? OR (created_at = ? AND id < ?))"
+            query += " AND (created_at < :created_at OR (created_at = :created_at AND id < :id))"
         elif direction == "prev":
-            query += " AND (created_at > ? OR (created_at = ? AND id > ?))"
-        values.extend([cursor_created_at, cursor_created_at, cursor_id])
+            query += " AND (created_at > :created_at OR (created_at = :created_at AND id > :id))"
 
     if direction == "prev":
-        query += " ORDER BY created_at, id LIMIT ?"
-    else: query += " ORDER BY created_at DESC, id DESC LIMIT ?"
-    values.append(page_size)
+        query += f" ORDER BY created_at, id LIMIT {page_size}"
+    else: query += f" ORDER BY created_at DESC, id DESC LIMIT {page_size}"
 
-    async with aiosqlite.connect("users_history.db") as conn:
-        conn.row_factory = aiosqlite.Row
-        rows = await conn.execute_fetchall(query, values)
-        for row in rows:
-            print(row["input_message"])
+    async with engine.connect() as conn:
+        result = await conn.execute(
+            text(query), params)
 
     prev_cursor, next_cursor = None, None
 
+    rows = result.fetchall()
+    print(rows)
     if rows:
         if direction == "prev":
-            first = rows[-1]
-            last = rows[0]
-        elif direction == "next":
-            first = rows[0]
-            last = rows[-1]
-
-        async with aiosqlite.connect("users_history.db") as conn:
-            conn.row_factory = aiosqlite.Row
-
-            # проверяем наличие записей новее (для prev-кнопки)
-            newer = await conn.execute_fetchall(
-                """
-                SELECT 1 FROM history
-                WHERE user_id = ?
-                  AND (created_at > ? OR (created_at = ? AND id > ?))
-                LIMIT 1
-                """,
-                (user_id, first["created_at"], first["created_at"], first["id"])
-            )
-            if newer:
-                prev_cursor = (first["id"], first["created_at"])
-                print(f"newer updated: {prev_cursor}")
-
+            rows.reverse()  # чтобы вернуть естественный порядок
+        first = rows[0]
+        last = rows[-1]
+        async with engine.connect() as conn:
+            newer = await conn.execute(text(
+            """
+            SELECT 1 FROM history
+            WHERE user_id = :user_id AND (created_at > :created_at OR (created_at = :created_at AND id > :id))
+            LIMIT 1
+            """), {'user_id': user_id, 'created_at': first[3], 'id': first[0]})
+            if newer.first():
+                    prev_cursor = (first[0], first[3])
             # проверяем наличие записей старее (для next-кнопки)
-            older = await conn.execute_fetchall(
+            older = await conn.execute(text(
                 """
                 SELECT 1 FROM history
-                WHERE user_id = ?
-                  AND (created_at < ? OR (created_at = ? AND id < ?))
+                WHERE user_id = :user_id
+                AND (created_at < :created_at OR (created_at = :created_at AND id < :id))
                 LIMIT 1
-                """,
-                (user_id, last["created_at"], last["created_at"], last["id"])
-            )
-            if older:
-                next_cursor = (last["id"], last["created_at"])
-
+                """), {'user_id': user_id, 'created_at': last[3], 'id': last[0]})
+            if older.first():
+                next_cursor = (last[0], last[3])
     return rows, next_cursor, prev_cursor

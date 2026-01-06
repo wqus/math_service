@@ -2,9 +2,10 @@ import asyncio
 from aiogram import Dispatcher as Dp
 import redis.asyncio as redis
 import aiofiles
-import aiosqlite
 import json
 from aiogram.fsm.storage.redis import RedisStorage
+from sqlalchemy.ext.asyncio import create_async_engine
+import asyncpg
 
 redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True, max_connections=25,
                                  health_check_interval=30, socket_timeout=4)
@@ -37,25 +38,15 @@ async def load_texts():
         exit(1)
 texts = asyncio.run(load_texts())
 
-#2. Иницилизация ДБ
-async def init_bot_db():
-    async with aiosqlite.connect('bot_data.db') as conn:
-        # Создаем таблицу пользователей
-        await conn.execute('''CREATE TABLE IF NOT EXISTS users (
-                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                     user_id INTEGER,
-                     language TEXT DEFAULT 'RU',
-                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                     user_states INTEGER DEFAULT 0)''')
-        await conn.commit()
+database_url = (
+    "postgresql+asyncpg://bot:botpass@localhost:5432/bot_db"
+)
+engine = create_async_engine(
+    database_url,
+    echo=True,
+    pool_size=5,
+    max_overflow=10
+)
 
-async def init_history_db():
-    async with aiosqlite.connect('users_history.db') as conn:
-        # Создаем таблицу пользователей
-        await conn.execute('''CREATE TABLE IF NOT EXISTS history (
-                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                     user_id INTEGER NOT NULL,
-                     input_message TEXT NOT NULL,
-                     output_message TEXT NOT NULL,
-                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
-        await conn.commit()
+
+

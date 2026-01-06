@@ -8,7 +8,7 @@ from keyboards.inline_kbs import page_keyboard
 from utils.utils import *
 from startup import texts
 from states.PlotStates import PlotStates
-
+import datetime as dt
 router = Router()
 
 
@@ -21,8 +21,8 @@ async def user_history(message: types.Message, user_language: str = "RU"):
 
     history_text = ""
     for row in rows:
-        input_message = row["input_message"].replace(">", "&gt;").replace("<", "&lt;")
-        output_message = row["output_message"].replace(">", "&gt;").replace("<", "&lt;")
+        input_message = row[1].replace(">", "&gt;").replace("<", "&lt;")
+        output_message = row[2].replace(">", "&gt;").replace("<", "&lt;")
         history_text += f"• {input_message};\t{texts[user_language]['answer']} <b>{output_message}</b>\n"
 
     if not history_text:
@@ -113,8 +113,9 @@ async def process_plot(message: types.Message, state: FSMContext, user_language:
             x_min=x_range[0],
             x_max=x_range[1]
         )
-        await message.answer_photo(photo=photo_file, caption=caption_filled, parse_mode='HTML')
+        print(type(message.from_user.id))
         await save_user_message(message.from_user.id, text, 'plot📈')
+        await message.answer_photo(photo=photo_file, caption=caption_filled, parse_mode='HTML')
 
         await state.clear()
         return None
@@ -130,7 +131,7 @@ async def call_handler(callback: CallbackQuery, user_language: str = "RU"):
     parts = callback.data.split(":", 3)
     direction = parts[2]  # "next" или "prev"
     cursor_split = parts[3].split("|", 1)
-    cursor = (int(cursor_split[0]), cursor_split[1])  # id + created_at
+    cursor = (int(cursor_split[0]), dt.datetime.fromisoformat(cursor_split[1]))  # id + created_at
 
     rows, next_cursor, prev_cursor = await requests_history(
         callback.from_user.id,
@@ -143,8 +144,8 @@ async def call_handler(callback: CallbackQuery, user_language: str = "RU"):
 
     history_text = ""
     for row in rows:
-        input_message = row["input_message"].replace(">", "&gt;").replace("<", "&lt;")
-        output_message = row["output_message"].replace(">", "&gt;").replace("<", "&lt;")
+        input_message = row[1].replace(">", "&gt;").replace("<", "&lt;")
+        output_message = row[2].replace(">", "&gt;").replace("<", "&lt;")
         history_text += f"• {input_message};\t{texts[user_language]['answer']} <b>{output_message}</b>\n"
 
     if not history_text:

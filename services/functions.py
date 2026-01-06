@@ -1,26 +1,21 @@
-import aiosqlite
+from sqlalchemy import text
+from startup import engine
 
-#________ЗАПУСКАЮТСЯ ПРИ ВЫЗОВЕ________
+#ЗАПУСКАЮТСЯ ПРИ ВЫЗОВЕ
 #1. Для записи пользователя в БД при начале диалога с ботом
-async def init_user(user_id: int) -> bool:
+async def init_user(user_id: int, username) -> bool:
     """
     Добавляем нового пользователя в БД при первом запуске.
     Возвращает True, если пользователь создан, False если уже существует.
     """
-    async with aiosqlite.connect('bot_data.db') as conn:
-        cursor = await conn.cursor()
+    async with engine.begin() as conn:
         # Проверяем, есть ли пользователь
-        await cursor.execute('SELECT 1 FROM users WHERE user_id = ?', (user_id,))
-        if await cursor.fetchone():
-            return False  # Пользователь уже есть
-
+        result = await conn.execute(text('SELECT 1 FROM users WHERE user_id = :user_id'), {'user_id': user_id})
+        row = result.first()
+        if row:
+            return False # Пользователь уже есть
         # Создаём нового
-        await cursor.execute('''
-        INSERT INTO users (user_id)
-        VALUES (?)
-        ''', (user_id,))
-        await conn.commit()
-        cursor.close()
+        await conn.execute(text("INSERT INTO users(user_id, username) VALUES (:user_id, :username)"),{'user_id': user_id, 'username': username})
         return True
 
 #1. Для обновления значения языка интерфейса пользователя
@@ -30,15 +25,13 @@ async def update_user_language(user_id: int, language: str) -> bool:
     Возвращает True при успехе, False если пользователя нет или возникновении ошибки
     """
     try:
-        async with aiosqlite.connect('bot_data.db') as conn:
-            cursor = await conn.cursor()
-            await cursor.execute('''
+        async with engine.begin() as conn:
+            result = await conn.execute(text('''
             UPDATE users 
-            SET language = ? 
-            WHERE user_id = ?
-            ''', (language, str(user_id)))
-            await conn.commit() #сохраняем изменения
-            return cursor.rowcount > 0  # Были ли обновлены строки? da/net
-    except aiosqlite.Error as e:
-        print(f"Database error: {e}")
+            SET language = :language
+            WHERE user_id = :user_id
+            '''), {'language': language, 'user_id': user_id})
+            return result.rowcount > 0  # Были ли обновлены строки? da/net
+    except Exception as e:
+        print(f"Error: {e}")
         return False

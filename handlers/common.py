@@ -18,7 +18,7 @@ async def start_reply(message: types.Message):
                                            'Пожалуйста выбери язык, на котором тебе будет комфортно общаться:\n\n'
                                            'Hi👋\n'
                                            'Please choose a language:', reply_markup=kb_language)
-    await init_user(message.from_user.id)
+    await init_user(message.from_user.id, message.from_user.username)
 
 # ответ на умения
 @router.message(Command(commands=["skills", "умения"]))
@@ -40,7 +40,7 @@ async def call_handler(callback: CallbackQuery):
 # ответ на примечание
 @router.message(Command(commands=["rules", "примечание"]))
 @router.message(F.text.in_([texts['language:RU']['note'], texts['language:EN']['note']]))
-@router.message(F.text.lower().in_(["примечание", "rules", "правила", "note"]))
+@router.message(F.text.lower().in_(["примечание", "rules", "правила", "note", 'примечание📃', 'notes📃']))
 async def primec(message: types.Message, user_language: str):
     await message.answer(text=texts[user_language]['note_answer'], parse_mode='HTML')
 
