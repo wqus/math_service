@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from startup import engine
+from db.engine import engine
 
 #ЗАПУСКАЮТСЯ ПРИ ВЫЗОВЕ
 #1. Для записи пользователя в БД при начале диалога с ботом

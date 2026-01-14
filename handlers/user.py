@@ -3,18 +3,17 @@ from aiogram.types import CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from sympy import Eq, solve, symbols
-
+from intents.IntentFilter import IntentFilter
 from keyboards.inline_kbs import page_keyboard
 from utils.utils import *
-from startup import texts
 from states.PlotStates import PlotStates
 import datetime as dt
+from aiogram import Bot
+
 router = Router()
 
-
-@router.message(Command("history"))
-@router.message(F.text.lower().in_(["история", "history", "История📃"]))
-async def user_history(message: types.Message, user_language: str = "RU"):
+@router.message(IntentFilter("history"))
+async def user_history(message: types.Message,texts: dict, user_language: str = "RU"):
     rows, next_cursor, prev_cursor = await requests_history(message.from_user.id)
 
     kb = await page_keyboard(next_cursor, prev_cursor)
@@ -37,7 +36,7 @@ async def user_history(message: types.Message, user_language: str = "RU"):
 
 #Решение уравнений
 @router.message(F.text.contains("="))
-async def solve_equation_or_expression(message: types.Message, user_language: str):
+async def solve_equation_or_expression(message: types.Message, user_language: str, texts: dict):
     try:
         print("IN EQUATION")
         # Вводим переменную
@@ -73,7 +72,7 @@ async def solve_equation_or_expression(message: types.Message, user_language: st
 
 # Хендлер для неравенств
 @router.message(lambda message: any(s in message.text for s in ['<','<=','>=','>']))
-async def solve_inequality(message: types.Message, user_language: str):
+async def solve_inequality(message: types.Message, user_language: str, texts: dict):
     try:
         user_input = message.text.lower()
 
@@ -94,7 +93,7 @@ async def solve_inequality(message: types.Message, user_language: str):
 
 #Хендлер обработки запросов по состоянию PlotStates.waiting_for_function
 @router.message(PlotStates.waiting_for_function)
-async def process_plot(message: types.Message, state: FSMContext, user_language: str):
+async def process_plot(message: types.Message, state: FSMContext, user_language: str, texts: dict):
     try:
         text = message.text.strip()
         original_text = text
@@ -127,7 +126,7 @@ async def process_plot(message: types.Message, state: FSMContext, user_language:
 
 # обработчик кнопок листания
 @router.callback_query(F.data.startswith("user:history:"))
-async def call_handler(callback: CallbackQuery, user_language: str = "RU"):
+async def call_handler(callback: CallbackQuery, texts: dict, user_language: str = "RU"):
     parts = callback.data.split(":", 3)
     direction = parts[2]  # "next" или "prev"
     cursor_split = parts[3].split("|", 1)
@@ -160,8 +159,8 @@ async def call_handler(callback: CallbackQuery, user_language: str = "RU"):
     await callback.answer()
 
 # Хендлер для остальных сообщений
-@router.message()
-async def handle_expression(message: types.Message, user_language: str):
+@router.message(IntentFilter("unknown"))
+async def handle_expression(message: types.Message, user_language: str, texts: dict):
     try:
         # Преобразовываем выражение
         user_input = message.text.lower()

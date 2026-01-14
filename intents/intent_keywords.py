@@ -1,0 +1,23 @@
+
+intent_keywords = {
+    'start': {
+        'language:RU': ["привет", "начать", "старт", "/старт"],
+        'language:EN': ["hi", "start", "hello", "/start"],
+    },
+    'skills': {
+        'language:RU': ["умения🤓","умения", "скиллы", "способности", "возможности", "функция", "/умения"],
+        'language:EN': ["skills🤓","skills", "opportunities", "functions", "/skills"],
+    },
+    'rules': {
+        'language:RU': ["примечание📃","правила", "примечание", "ограничения", '/правила'],
+        'language:EN': ["note📃","note", "rules📃","rules", "notes", '/rules'],
+    },
+    'plot': {
+        'language:RU': ["график📈","график", '/график'],
+        'language:EN': ["plot📈", '/plot'],
+    },
+    'history': {
+        'language:RU': ["история📃", "история", "прошлое", '/история'],
+        'language:EN': ["history📃", "history", '/history'],
+    },
+}
