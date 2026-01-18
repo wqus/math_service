@@ -17,7 +17,11 @@ intent_keywords = {
         'language:EN': ["plot📈", '/plot'],
     },
     'history': {
-        'language:RU': ["история📃", "история", "прошлое", '/история'],
-        'language:EN': ["history📃", "history", '/history'],
+        'language:RU': ["история📖", "история", "прошлое", '/история'],
+        'language:EN': ["history📖", "history", '/history'],
+    },
+    'payments':{
+        'language:RU': ['премиум🧠','премиум', "подписка", "оплатить", "вип", "купить" "неограниченный доступ"],
+        'language:EN': ['premium🧠','premium', 'subscription', 'vip', 'stars', 'buy', 'unlimited access'],
     },
 }

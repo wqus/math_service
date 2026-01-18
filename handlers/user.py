@@ -1,6 +1,5 @@
 from aiogram import types, F, Router
 from aiogram.types import CallbackQuery
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from sympy import Eq, solve, symbols
 from intents.IntentFilter import IntentFilter
@@ -8,7 +7,6 @@ from keyboards.inline_kbs import page_keyboard
 from utils.utils import *
 from states.PlotStates import PlotStates
 import datetime as dt
-from aiogram import Bot
 
 router = Router()
 

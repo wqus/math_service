@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from keyboards.reply_kbs import kb_info
 from keyboards.inline_kbs import kb_language
-from services.functions import init_user, update_user_language
+from services.functions import init_user, update_user_language, update_subscription_period
 from aiogram.types import CallbackQuery
 from states.PlotStates import PlotStates
 from intents.IntentFilter import IntentFilter
@@ -12,12 +12,12 @@ from aiologger import Logger
 router = Router()
 
 logger = Logger(name = __name__)
+
 # HAHDLERS
 #choose language and start
 @router.message(CommandStart())
 @router.message(IntentFilter("start"))
 async def start_reply(message: types.Message):
-    print("АПДЕЙТ ПРИШЁЛ:", message.text)
     await message.answer(text='Привет!👋\n'
                                            'Пожалуйста выбери язык, на котором тебе будет комфортно общаться:\n\n'
                                            'Hi👋\n'
@@ -49,3 +49,6 @@ async def primec(message: types.Message, user_language: str, texts: dict):
 async def start_plot(message: types.Message, user_language: str, state: FSMContext, texts: dict):
     await message.answer(text=texts[user_language]['plot_message'], parse_mode='HTML')
     await state.set_state(PlotStates.waiting_for_function)
+
+
+

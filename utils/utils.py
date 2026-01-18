@@ -3,14 +3,10 @@ import sympy as sp
 import numpy as np
 import io
 import matplotlib.pyplot as plt
-from Scripts.activate_this import prev_length
-from fontTools.merge.util import first
 from sympy import parse_expr
 from sympy.parsing.sympy_parser import standard_transformations, implicit_multiplication, convert_xor
 from db.engine import engine
 from sqlalchemy import text
-import aiofiles
-import json
 
 transformations = (
     standard_transformations + (implicit_multiplication, convert_xor))

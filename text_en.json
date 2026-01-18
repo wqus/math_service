@@ -11,6 +11,12 @@
   "error": "An error has occurred:(\n\nError (for the developer, this won't happen in the future):\n",
   "wrong_input": "Incorrect equation.\n\nCheck your entry and try again",
   "answer": "<b>\tAnswer</b>",
-  "history": "History\uD83D\uDCC3",
-  "history_answer": "<b>Input history:</b>\uD83D\uDCDD"
+  "history": "History\uD83D\uDCD6",
+  "history_answer": "<b>Input history:</b>\uD83D\uDCDD",
+  "premium": "Premium\uD83E\uDDE0",
+  "premium_choose": "Select the subscription duration\uD83D\uDC47\uD83C\uDFFB:\n\n\t\t\t<b>• 1 MONTH - 250⭐\n\t\t\t• 3 MONTHS - 650⭐\n\t\t\t• 12 MONTHS - 2500⭐</b>\n",
+  "premium_answer": "Unlock the full potential of the bot!\uD83D\uDCAA\uD83C\uDFFB \n\nThe <b>premium subscription</b> removes all restrctions and gives unlimited access to all functions\nThis is a new level of convenience and possibilities.",
+  "premium_description_for_link": "Unlock the full potential of the bot!",
+  "payments_successful_answer": "<b>Thank you for your trust!</b>\n\nThe full functionality of the bot is now available to you☺",
+  "payments_failed_answer": "Unfortunately, an error occurred while processing the payment.\n\nIf the premium has not been issued within 3hours, be sure to report your problem to support using the 'Support' button and we will solve it!"
 }

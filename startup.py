@@ -13,6 +13,7 @@ from aiogram import Bot, Dispatcher
 from handlers.admin import router as admin_router
 from handlers.common import router as common_router
 from handlers.user import router as user_router
+from handlers.payments import router as payments_router
 from aiogram.client.session.aiohttp import AiohttpSession
 
 logger = logging.getLogger(name = __name__)
@@ -30,15 +31,14 @@ async def init_bot():
         redis_client = await init_redis()
 
         logger.debug("Создаем RedisStorage")
-        storage = RedisStorage(redis_client)
+        storage = RedisStorage(redis_client, data_ttl=600, state_ttl=600)
 
         logger.debug("Создаем Dispatcher")
         dp = Dispatcher(storage=storage)
 
         logger.info("Подключение роутеров")
-        dp.include_router(admin_router)
-        dp.include_router(common_router)
-        dp.include_router(user_router)
+        dp.include_routers(admin_router,common_router,user_router,payments_router)
+
         return bot, dp
     except Exception:
         logger.critical("Не удалось запустить бота — критическая ошибка инициализации", exc_info=True)

@@ -8,4 +8,5 @@ class Intent(Enum):
     EQUATION = 'equation'
     INEQUALITY = 'inequality'
     HISTORY = 'history'
+    PAYMENTS = 'payments'
     UNKNOWN = 'unknown'
