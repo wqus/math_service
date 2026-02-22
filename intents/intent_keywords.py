@@ -24,4 +24,8 @@ intent_keywords = {
         'language:RU': ['премиум🧠','премиум', "подписка", "оплатить", "вип", "купить" "неограниченный доступ"],
         'language:EN': ['premium🧠','premium', 'subscription', 'vip', 'stars', 'buy', 'unlimited access'],
     },
+    'support': {
+        'language:RU': ['поддержка✉️', 'поддержка', "помощь", "проблема"],
+        'language:EN': ['support✉️', 'suppport', 'help', "problem"],
+    },
 }

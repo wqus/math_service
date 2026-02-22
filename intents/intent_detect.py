@@ -9,5 +9,6 @@ def detect_intent(text: str, lang: str):
 
         for keyword in keywords:
             if text in keyword:
+                print(Intent(intent_key))
                 return Intent(intent_key)
     return Intent.UNKNOWN

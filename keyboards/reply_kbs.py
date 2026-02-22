@@ -1,9 +1,11 @@
 from aiogram import types
 import logging
 
+
 async def kb_info(texts, language):
     logger = logging.getLogger(__name__)
     logger.debug("Создание reply keyboard")
+    '''
     kb = {
         'language:RU': types.ReplyKeyboardMarkup(keyboard=[[types.KeyboardButton(text=texts['language:RU']['skills']),
                                                             types.KeyboardButton(text=texts['language:RU']['note'])],
@@ -18,4 +20,12 @@ async def kb_info(texts, language):
                                                            [types.KeyboardButton(text = texts['language:EN']['premium'])]],
                                                  resize_keyboard=True)
     }
-    return kb[language]
+    '''
+    kb = types.ReplyKeyboardMarkup(keyboard=[[types.KeyboardButton(text=texts[language]['skills']),
+                                              types.KeyboardButton(text=texts[language]['note'])],
+                                             [types.KeyboardButton(text=texts[language]['support']),
+                                              types.KeyboardButton(text=texts[language]['history'])],
+                                             [types.KeyboardButton(text=texts[language]['plot'])],
+                                             [types.KeyboardButton(text=texts[language]['premium'])]],
+                                   resize_keyboard=True)
+    return kb

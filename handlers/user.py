@@ -2,16 +2,19 @@ from aiogram import types, F, Router
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 from sympy import Eq, solve, symbols
-from intents.IntentFilter import IntentFilter
+from Filters.IntentFilter import IntentFilter
 from keyboards.inline_kbs import page_keyboard
+from keyboards.reply_kbs import kb_info
+from services.AccessRights import AccessRights
 from utils.utils import *
 from states.PlotStates import PlotStates
 import datetime as dt
 
 router = Router()
 
+
 @router.message(IntentFilter("history"))
-async def user_history(message: types.Message,texts: dict, user_language: str = "RU"):
+async def user_history(message: types.Message, texts: dict, user_language: str = "RU"):
     rows, next_cursor, prev_cursor = await requests_history(message.from_user.id)
 
     kb = await page_keyboard(next_cursor, prev_cursor)
@@ -32,11 +35,10 @@ async def user_history(message: types.Message,texts: dict, user_language: str = 
     )
 
 
-#Решение уравнений
+# Решение уравнений
 @router.message(F.text.contains("="))
 async def solve_equation_or_expression(message: types.Message, user_language: str, texts: dict):
     try:
-        print("IN EQUATION")
         # Вводим переменную
         x = symbols('x')
 
@@ -62,14 +64,15 @@ async def solve_equation_or_expression(message: types.Message, user_language: st
 
             await message.answer(text=formatted_res)
             await save_user_message(message.from_user.id, user_input, formatted_res)
-        else: #иначе сообщаем о некорректном вводе
+        else:  # иначе сообщаем о некорректном вводе
             await message.answer(text=texts[user_language]['wrong_input'])
 
-    except Exception as e: #выводим в сообщение об ошибке
+    except Exception as e:  # выводим в сообщение об ошибке
         await message.answer(text=f'{texts[user_language]['error']}{e}')
 
+
 # Хендлер для неравенств
-@router.message(lambda message: any(s in message.text for s in ['<','<=','>=','>']))
+@router.message(lambda message: any(s in message.text for s in ['<', '<=', '>=', '>']))
 async def solve_inequality(message: types.Message, user_language: str, texts: dict):
     try:
         user_input = message.text.lower()
@@ -81,17 +84,19 @@ async def solve_inequality(message: types.Message, user_language: str, texts: di
         x = sp.symbols('x')
         solution = sp.solve_univariate_inequality(safe_parse_to_numpy_answer(user_input), x, relational=False)
 
-        #в красивую строку
+        # в красивую строку
         formatted_solution = f'x ∈ {sp.pretty(solution, use_unicode=True)}'
-        await message.answer(text= formatted_solution)
+        await message.answer(text=formatted_solution)
         await save_user_message(message.from_user.id, user_input, formatted_solution)
 
-    except Exception as e: #выводим в сообщение об ошибке
+    except Exception as e:  # выводим в сообщение об ошибке
         await message.answer(text=f'{texts[user_language]['error']}{e}')
 
-#Хендлер обработки запросов по состоянию PlotStates.waiting_for_function
+
+# Хендлер обработки запросов по состоянию PlotStates.waiting_for_function
 @router.message(PlotStates.waiting_for_function)
-async def process_plot(message: types.Message, state: FSMContext, user_language: str, texts: dict):
+async def process_plot(message: types.Message, state: FSMContext, user_language: str, texts: dict,
+                       access_rights: AccessRights):
     try:
         text = message.text.strip()
         original_text = text
@@ -110,21 +115,23 @@ async def process_plot(message: types.Message, state: FSMContext, user_language:
             x_min=x_range[0],
             x_max=x_range[1]
         )
-        print(type(message.from_user.id))
         await save_user_message(message.from_user.id, text, 'plot📈')
-        await message.answer_photo(photo=photo_file, caption=caption_filled, parse_mode='HTML')
+        await message.answer_photo(photo=photo_file, caption=caption_filled, parse_mode='HTML', reply_markup = await kb_info(texts, user_language))
 
         await state.clear()
-        return None
-    except Exception as e:
+
+        attempts_left = await access_rights.reduce_number_of_attempts(message.from_user.id)
+        if attempts_left <= 0:
+            await message.answer(text=texts[user_language]['attempts_ended'], parse_mode='html')
+    except Exception:
         # Обработка сообщений об ошибках и запрос на повторный ввод
         await message.answer(text=texts[user_language][f"plot_try_again"])
-        print(e)
-        return None
+
 
 # обработчик кнопок листания
 @router.callback_query(F.data.startswith("user:history:"))
 async def call_handler(callback: CallbackQuery, texts: dict, user_language: str = "RU"):
+
     parts = callback.data.split(":", 3)
     direction = parts[2]  # "next" или "prev"
     cursor_split = parts[3].split("|", 1)
@@ -136,7 +143,6 @@ async def call_handler(callback: CallbackQuery, texts: dict, user_language: str 
         direction=direction
     )
 
-    print(f"NEXT: {next_cursor}\nPREV:{prev_cursor}")
     kb = await page_keyboard(next_cursor, prev_cursor)
 
     history_text = ""
@@ -155,6 +161,7 @@ async def call_handler(callback: CallbackQuery, texts: dict, user_language: str 
     )
 
     await callback.answer()
+
 
 # Хендлер для остальных сообщений
 @router.message(IntentFilter("unknown"))

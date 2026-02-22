@@ -7,15 +7,20 @@ from sympy import parse_expr
 from sympy.parsing.sympy_parser import standard_transformations, implicit_multiplication, convert_xor
 from db.engine import engine
 from sqlalchemy import text
+from datetime import datetime
+from keyboards.inline_kbs import answer_to_ticket_kb, load_three_tickets_kb
+from repositories.support_messages_repository import take_tickets_for_support
 
 transformations = (
-    standard_transformations + (implicit_multiplication, convert_xor))
+        standard_transformations + (implicit_multiplication, convert_xor))
+
 
 # Функция для замены синусов и т.п
 def zamena(x):
     # Заменяем знак степени
     x = re.sub(r'(sin|cos|tan|cot)\((\d+)\)', r'\1(math.radians(\2))', x)
     return x
+
 
 # Функция для обработки знака = в неравенствах
 def solve_inequality(user_input: str, inequality_type: str):
@@ -33,12 +38,15 @@ def solve_inequality(user_input: str, inequality_type: str):
     # Преобразуем решение в красивую строку
     formatted_solution = sp.pretty(solution, use_unicode=True)
     return formatted_solution
+
+
 def safe_parse_to_numpy_answer(expr: str):
     def replaces(match):
-        #фукция для замены градусов в триганометрических функциях на радианы, вызывается автоматически в re.sub при нахожденнии совпадений
+        # фукция для замены градусов в триганометрических функциях на радианы, вызывается автоматически в re.sub при нахожденнии совпадений
         func_name = match.group(1)
         degrees_to_radians = np.radians(int(match.group(2)))
         return f"{func_name}({degrees_to_radians})"
+
     # Приведение к нижнему регистру и удаление пробелов
     cleaned = expr.lower().replace(' ', '')
 
@@ -59,7 +67,7 @@ def safe_parse_to_numpy_answer(expr: str):
     # Базовая защита от опасных ключевых слов
     if re.search(r'(__|import|lambda|eval|exec|system)', cleaned):
         raise ValueError("Недопустимые операции в выражении")
-    cleaned = re.sub(r'(sin|cos|tan|cot)\((\d+)\)',replaces, cleaned)
+    cleaned = re.sub(r'(sin|cos|tan|cot)\((\d+)\)', replaces, cleaned)
     # Парсинг выражения через SymPy
     try:
         parsed = parse_expr(cleaned, transformations=transformations)
@@ -81,12 +89,14 @@ def safe_parse_to_numpy_answer(expr: str):
     parsed = parsed.subs({'e': sp.E, 'pi': sp.pi})
     return parsed
 
+
 def safe_parse_to_numpy_function(expr: str):
     def replaces(match):
-        #фукция для замены градусов в триганометрических функциях на радианы, вызывается автоматически в re.sub при нахожденнии совпадений
+        # фукция для замены градусов в триганометрических функциях на радианы, вызывается автоматически в re.sub при нахожденнии совпадений
         func_name = match.group(1)
         degrees_to_radians = np.radians(int(match.group(2)))
         return f"{func_name}({degrees_to_radians})"
+
     # Приведение к нижнему регистру и удаление пробелов
     cleaned = expr.lower().replace(' ', '')
 
@@ -107,7 +117,7 @@ def safe_parse_to_numpy_function(expr: str):
     # Базовая защита от опасных ключевых слов
     if re.search(r'(__|import|lambda|eval|exec|system)', cleaned):
         raise ValueError("Недопустимые операции в выражении")
-    cleaned = re.sub(r'(sin|cos|tan|cot)\((\d+)\)',replaces, cleaned)
+    cleaned = re.sub(r'(sin|cos|tan|cot)\((\d+)\)', replaces, cleaned)
     # Парсинг выражения через SymPy
     try:
         parsed = parse_expr(cleaned, transformations=transformations, evaluate=False)
@@ -136,7 +146,10 @@ def safe_parse_to_numpy_function(expr: str):
 
     return f_numpy
 
-x_range = (-10,10)
+
+x_range = (-10, 10)
+
+
 # Функция генерации графика
 def generate_plot(f_numpy, expr_str: str, user_language: str) -> io.BytesIO:
     # Проверка корректности диапазона
@@ -180,12 +193,15 @@ def generate_plot(f_numpy, expr_str: str, user_language: str) -> io.BytesIO:
     buf.seek(0)
     return buf
 
+
 async def save_user_message(user_id, input_message, output_message):
     async with engine.begin() as conn:
         await conn.execute(
             text('''INSERT INTO history(user_id, input_message, output_message)
-                     VALUES (:user_id, :input_message, :output_message)'''), {"user_id": user_id, "input_message": input_message, "output_message": output_message}
+                     VALUES (:user_id, :input_message, :output_message)'''),
+            {"user_id": user_id, "input_message": input_message, "output_message": output_message}
         )
+
 
 async def requests_history(user_id, cursor=None, page_size=10, direction="next"):
     query = "SELECT id, input_message, output_message, created_at FROM history WHERE user_id = :user_id"
@@ -204,7 +220,8 @@ async def requests_history(user_id, cursor=None, page_size=10, direction="next")
 
     if direction == "prev":
         query += f" ORDER BY created_at, id LIMIT {page_size}"
-    else: query += f" ORDER BY created_at DESC, id DESC LIMIT {page_size}"
+    else:
+        query += f" ORDER BY created_at DESC, id DESC LIMIT {page_size}"
 
     async with engine.connect() as conn:
         result = await conn.execute(
@@ -221,13 +238,13 @@ async def requests_history(user_id, cursor=None, page_size=10, direction="next")
         last = rows[-1]
         async with engine.connect() as conn:
             newer = await conn.execute(text(
-            """
-            SELECT 1 FROM history
-            WHERE user_id = :user_id AND (created_at > :created_at OR (created_at = :created_at AND id > :id))
-            LIMIT 1
-            """), {'user_id': user_id, 'created_at': first[3], 'id': first[0]})
+                """
+                SELECT 1 FROM history
+                WHERE user_id = :user_id AND (created_at > :created_at OR (created_at = :created_at AND id > :id))
+                LIMIT 1
+                """), {'user_id': user_id, 'created_at': first[3], 'id': first[0]})
             if newer.first():
-                    prev_cursor = (first[0], first[3])
+                prev_cursor = (first[0], first[3])
             # проверяем наличие записей старее (для next-кнопки)
             older = await conn.execute(text(
                 """
@@ -239,3 +256,20 @@ async def requests_history(user_id, cursor=None, page_size=10, direction="next")
             if older.first():
                 next_cursor = (last[0], last[3])
     return rows, next_cursor, prev_cursor
+
+
+# Функция для загрузки и отображения тикетов
+async def show_tickets(texts, language='language:RU', current_position: int = 0):
+    last_three_tickets, has_more = await take_tickets_for_support(current_position)
+
+    if last_three_tickets is None:  # Выводим сообщение что тикетов больше нет, если запуск был через команду(т.е. на получение трёх старейших тикетов)
+        return [(texts[language]['support_no_tickets'], None)], last_three_tickets, has_more
+    else:  # Если есть - выводим их
+        tickets = []
+        for ticket in last_three_tickets:
+            ticket_message = (
+                f'Ticket_id: {ticket['id']}\n\nUser_id: {ticket['user_id']}'
+                f'\n{ticket['send_time'].strftime("%Y-%m-%d %H:%M")}\n\n"{ticket['message']}"')
+            tickets.append((ticket_message, await answer_to_ticket_kb(ticket['id'], ticket['user_id'],
+                                                                texts[language]['support_answer_bt'])))
+        return tickets, last_three_tickets, has_more

@@ -16,6 +16,8 @@ from handlers.user import router as user_router
 from handlers.payments import router as payments_router
 from aiogram.client.session.aiohttp import AiohttpSession
 
+from services.AccessRights import AccessRights
+
 logger = logging.getLogger(name = __name__)
 
 async def init_bot():
@@ -39,6 +41,7 @@ async def init_bot():
         logger.info("Подключение роутеров")
         dp.include_routers(admin_router,common_router,user_router,payments_router)
 
+        dp['access_rights'] = AccessRights(redis_client)
         return bot, dp
     except Exception:
         logger.critical("Не удалось запустить бота — критическая ошибка инициализации", exc_info=True)
@@ -76,7 +79,7 @@ def init_log():
 async def init_redis(): #устанавливает соединение с редис
     try:
         logger.info("Создание redis_client")
-        redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True, max_connections=25,
+        redis_client = await redis.Redis(host='localhost', port=6379, db=0, decode_responses=True, max_connections=25,
                                    health_check_interval=30, socket_timeout=4)
         return redis_client
     except Exception:

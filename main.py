@@ -4,6 +4,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp.web_app import Application
 from sympy.stats import Expectation
 
+from services.AccessRights import AccessRights
 from startup import webhook_shutdown, webhook_startup, init_bot, load_texts, init_log
 from aiohttp import web
 from middlewares.user_language import InjectLanguage
@@ -26,7 +27,7 @@ async def main():
         dp.message.outer_middleware(IntentMiddleware())
 
         dp['texts'] = await load_texts()
-        
+
         logger.info("Регистрация SimpleRequestHandler")
         SimpleRequestHandler(dispatcher=dp, bot = bot).register(app, path = WEBHOOK_PATH)
         dp.startup.register(webhook_startup)

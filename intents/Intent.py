@@ -9,4 +9,5 @@ class Intent(Enum):
     INEQUALITY = 'inequality'
     HISTORY = 'history'
     PAYMENTS = 'payments'
+    SUPPORT = 'support'
     UNKNOWN = 'unknown'

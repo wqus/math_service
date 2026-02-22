@@ -1,13 +1,12 @@
-from sqlalchemy import text
-from db.engine import engine
 import logging
+from db.engine import engine
+from sqlalchemy import text
 
-logger = logging.getLogger(name=__name__)
-
+logger = logging.getLogger(__name__)
 
 # ЗАПУСКАЮТСЯ ПРИ ВЫЗОВЕ
 # 1. Для записи пользователя в БД при начале диалога с ботом
-async def init_user(user_id: int, username) -> bool:
+async def init_user(user_id: int) -> bool:
     """
     Добавляем нового пользователя в БД при первом запуске.
     Возвращает True, если пользователь создан, False если уже существует.
@@ -21,8 +20,8 @@ async def init_user(user_id: int, username) -> bool:
             if row:
                 return False  # Пользователь уже есть
             # Создаём нового
-            await conn.execute(text("INSERT INTO users(user_id, username) VALUES (:user_id, :username)"),
-                               {'user_id': user_id, 'username': username})
+            await conn.execute(text("INSERT INTO users(user_id, role) VALUES (:user_id, :role)"),
+                               {'user_id': user_id, 'role': 'normal'})
             return True
     except Exception:
         logger.error("Ошибка при инициализации пользователя")
@@ -108,3 +107,64 @@ async def update_subscription_period(user_id: int, payload: str, amount: int, ch
     except Exception:
         logger.exception(f"Ошибка при обработке платежа user: {user_id}; charge_id: {charge_id}")
         return False
+
+# Проверяем роль пользователя и время окончания его подписки при наличии
+async def check_user_from_db(user_id):
+    try:
+        async with engine.begin() as conn:
+            result = await conn.execute(text("""
+            WITH updated as (UPDATE users SET premium_until = NULL, role = 'normal' WHERE user_id = :user_id 
+            AND NOW() > premium_until AND role != 'admin' RETURNING premium_until, role)
+            SELECT premium_until, role FROM updated
+            UNION ALL
+            SELECT premium_until, role FROM users
+            WHERE user_id = :user_id AND NOT EXISTS (SELECT 1 FROM updated);
+            """), {'user_id': user_id})
+            user_status = result.fetchone()
+            if user_status:
+                return str(user_status[0]), user_status[1]
+            else:
+                logger.error(f"Ошибка проверки статуса, пользователь не найден, user_id: {user_id}")
+                return False
+    except Exception:
+        logger.exception("Ошибка обновления статуса пользователя")
+        return False
+
+# Для проверки и ресета количества оставшихся попыток
+async def check_and_reset_attempt_left(user_id):
+    try:
+        async with engine.begin() as conn:
+            result = await conn.execute(text("""
+            WITH updated AS(
+            UPDATE users
+            SET free_attempts_left = 5, free_attempts_reset = NULL
+            WHERE user_id = :user_id AND free_attempts_left <=0 AND free_attempts_reset <= NOW()
+            RETURNING free_attempts_left)
+            SELECT free_attempts_left FROM updated
+            UNION ALL
+            SELECT free_attempts_left FROM users
+            WHERE user_id = :user_id AND NOT EXISTS (SELECT 1 FROM updated)
+            """), {'user_id': user_id})
+            return result.fetchone()[0] > 0
+    except Exception:
+        logger.exception(f'Ошибка при проверке оставшихся попыток, user_id: {user_id}')
+        return False
+
+
+# Функция для уменьшения количества оставшихся попыток и установки времени ресета
+async def reduce_attempts_from_db(
+        user_id):  # надо проверять, что если =1, тогда делаем 0 и ресет тайм через 24ч, если больше то просто -1
+    try:
+        async with engine.begin() as conn:
+            result = await conn.execute(text("""
+            UPDATE users
+            SET free_attempts_left = free_attempts_left -1,
+            free_attempts_reset = CASE WHEN (free_attempts_left-1) <= 0 THEN NOW() + INTERVAL '24 hours'
+                                       ELSE free_attempts_reset
+            END
+            WHERE user_id = :user_id RETURNING free_attempts_left
+            """), {'user_id': user_id})
+            return result.fetchone()[0]
+    except Exception:
+        logger.exception(f'Ошибка при измении количества бесплатных использований, user_id: {user_id}')
+        return 1 #Возвращаем 1 если ошибка на нашей стороны, чтобы пользователь мог использовать другую функцию и полсе ее выполнения еще раз будет обработка в этой функции
