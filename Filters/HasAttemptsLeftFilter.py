@@ -18,8 +18,9 @@ class HasAttemptsLeft(BaseFilter):
             else:
                 if role == 'normal':
                     return await access_rights.attempts_left(message.from_user.id)
-                else:
-                    return True
+                elif role == 'banned':
+                    return False
+                else: return True
         except Exception:
             logger.exception("Ошибка проверки доступа пользователя к freemium функции")
             return False

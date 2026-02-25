@@ -52,6 +52,14 @@ async def load_three_tickets_kb(last_ticket_id, load_more_text):
     return builder
 
 
+# Клавиатура, чтобы отправлять запрос на вывод ещё трех банов
+async def load_three_bans_kb(last_ban_id, load_more_text):
+    builder = InlineKeyboardBuilder()
+    builder.button(text=load_more_text, callback_data=f'bans:load:{last_ban_id}')
+
+    return builder
+
+
 # Клавиатура, чтобы оценивать ответ поддержик
 async def rate_support_answer_kb(ticket_id):
     builder = InlineKeyboardBuilder()
@@ -61,5 +69,13 @@ async def rate_support_answer_kb(ticket_id):
     builder.button(text='3', callback_data=f'ticket:{ticket_id}:3')
     builder.button(text='4', callback_data=f'ticket:{ticket_id}:4')
     builder.button(text='5', callback_data=f'ticket:{ticket_id}:5')
+
+    return builder
+
+
+# Клавиатура для разбана пользователя
+async def unban_user_kb(user_id, unban_text):
+    builder = InlineKeyboardBuilder()
+    builder.button(text=unban_text, callback_data=f'unban:{user_id}')
 
     return builder

@@ -33,5 +33,15 @@
   "support_success_answer": "The response to the request has been sent to the user!✅",
   "support_failed_answer": "An error occurred while saving the response. Try clicking on the \"Reply\" button again and you will have to enter the answer again.\n\nIf an error occurs, contact the technical department.",
   "text_for_user": "The response to your request (Ticket_id:{ticket_id}):</b>\n\n{answer_message}\n\n<i>Rate how much this answer helped you\uD83D\uDC47\uD83C\uDFFB</i>",
-  "thanks_for_rating": "Thanks for sharing your experience! \uD83D\uDE4C We appreciate your help in making our support better\n\n"
+  "thanks_for_rating": "Thanks for sharing your experience! \uD83D\uDE4C We appreciate your help in making our support better\n\n",
+  "right_ban_usage": "Usage: /ban username [reason]\n\n",
+  "user_was_banned_successful": "The user with user_id: {user_id} has been banned",
+  "user_was_banned_unsuccessful": "Error when trying to ban the user(user_id = {user_id})",
+  "load_more_bans" : "Upload more banned users?",
+  "no_bans_to_load" : "These were the last banned users!",
+  "no_bans": "There are no banned users!",
+  "unban": "Unblock",
+  "successful_unban" : "User (id: {user_id}) has been successfully unblocked!",
+  "unsuccessful_unban" : "An error occurred while trying to unblock the user, try again later",
+  "reason": "Reason for blocking: "
 }

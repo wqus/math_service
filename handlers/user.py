@@ -2,6 +2,8 @@ from aiogram import types, F, Router
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 from sympy import Eq, solve, symbols
+
+from Filters.AccessRightsFilter import AccessRightsFilter
 from Filters.IntentFilter import IntentFilter
 from keyboards.inline_kbs import page_keyboard
 from keyboards.reply_kbs import kb_info
@@ -13,7 +15,7 @@ import datetime as dt
 router = Router()
 
 
-@router.message(IntentFilter("history"))
+@router.message(AccessRightsFilter(0), IntentFilter("history"))
 async def user_history(message: types.Message, texts: dict, user_language: str = "RU"):
     rows, next_cursor, prev_cursor = await requests_history(message.from_user.id)
 
@@ -36,7 +38,7 @@ async def user_history(message: types.Message, texts: dict, user_language: str =
 
 
 # Решение уравнений
-@router.message(F.text.contains("="))
+@router.message(AccessRightsFilter(0), F.text.contains("="))
 async def solve_equation_or_expression(message: types.Message, user_language: str, texts: dict):
     try:
         # Вводим переменную
@@ -72,7 +74,7 @@ async def solve_equation_or_expression(message: types.Message, user_language: st
 
 
 # Хендлер для неравенств
-@router.message(lambda message: any(s in message.text for s in ['<', '<=', '>=', '>']))
+@router.message(AccessRightsFilter(0), lambda message: any(s in message.text for s in ['<', '<=', '>=', '>']))
 async def solve_inequality(message: types.Message, user_language: str, texts: dict):
     try:
         user_input = message.text.lower()
@@ -129,7 +131,7 @@ async def process_plot(message: types.Message, state: FSMContext, user_language:
 
 
 # обработчик кнопок листания
-@router.callback_query(F.data.startswith("user:history:"))
+@router.callback_query(AccessRightsFilter(0), F.data.startswith("user:history:"))
 async def call_handler(callback: CallbackQuery, texts: dict, user_language: str = "RU"):
 
     parts = callback.data.split(":", 3)
@@ -164,7 +166,7 @@ async def call_handler(callback: CallbackQuery, texts: dict, user_language: str 
 
 
 # Хендлер для остальных сообщений
-@router.message(IntentFilter("unknown"))
+@router.message(AccessRightsFilter(0), IntentFilter("unknown"))
 async def handle_expression(message: types.Message, user_language: str, texts: dict):
     try:
         # Преобразовываем выражение

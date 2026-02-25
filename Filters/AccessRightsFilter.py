@@ -21,6 +21,7 @@ class AccessRightsFilter(BaseFilter):
                 level = 2
             elif role == 'premium':
                 level = 1
-            else:
+            elif role == 'normal':
                 level = 0
+            else: level = -1
             return level >= self.min_level

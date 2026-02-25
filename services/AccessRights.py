@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timezone
-from email.policy import default
 
 import redis.asyncio as redis
 from repositories.users_repository import check_user_from_db, reduce_attempts_from_db
@@ -27,8 +26,9 @@ class AccessRights:
                 premium_until, role = await check_user_from_db(user_id)
                 if role == 'admin':
                     ttl = 2592000
-                else:
-                    ttl = 600
+                elif role is None:
+                    ttl = 1
+                else: ttl = 600
                 # Устанавливаем значения в хэш
                 await self.redis_client.hset(
                     f'access:{user_id}',

@@ -4,6 +4,6 @@ LOCAL_WEBHOOK_HOST = '0.0.0.0'
 LOCAL_WEBHOOK_PORT = 8080
 
 WEBHOOK_PATH = '/bots/MathBot/webhook'
-WEBHOOK_BASE_URL = 'https://orange-weeks-tickle.loca.lt'
+WEBHOOK_BASE_URL = 'https://tiny-moles-sneeze.loca.lt'
 
 WEBHOOK_URL_FULL_PATH = WEBHOOK_BASE_URL + WEBHOOK_PATH

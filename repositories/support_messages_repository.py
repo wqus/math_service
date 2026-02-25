@@ -1,7 +1,5 @@
 import logging
 
-from telebot.apihelper import remove_user_verification
-
 from db.engine import engine
 from sqlalchemy import text
 
@@ -60,7 +58,27 @@ async def take_tickets_for_support(current_position: int = 0):
             return rows, has_more
     except Exception:
         logger.exception(f"Ошибка при попытке получить из БД тикеты")
-        return None
+        return None, None
+
+#Функция для извлечения 3х банов
+async def take_bans(current_position: int = 0):
+    try:
+        async with engine.begin() as conn:
+            result = await conn.execute(text("""
+            SELECT id, user_id, banned_by, banned_at, reason FROM banned_users WHERE id > :current_position AND active ORDER BY id LIMIT 4 
+            """), {"current_position": current_position})
+
+            rows = result.mappings().fetchall()  # чтобы был словарь
+            has_more = False  # если True -> отправляем сообщение "Загрузить еще?", если False -> "Банов больше нет!"
+
+            if len(rows) >= 4:
+                has_more = True
+                rows.pop()  # возвращаем только три бана
+
+            return rows, has_more
+    except Exception:
+        logger.exception(f"Ошибка при попытке получить из БД тикеты")
+        return None, None
 
 
 # Функция для сохранения в бд ответа на тикет и обновления статуса на "closed"
@@ -79,7 +97,9 @@ async def save_support_answer_rating(rating, ticket_id):
     try:
         async with engine.begin() as conn:
             await conn.execute(text("""
-            UPDATE support_messages SET rating = :rating WHERE id = :ticket_id"""), {'ticket_id': int(ticket_id), 'rating': int(rating)})
+            UPDATE support_messages SET rating = :rating WHERE id = :ticket_id"""),
+                               {'ticket_id': int(ticket_id), 'rating': int(rating)})
+            return True
     except Exception:
         logger.exception(f"Ошибка при попытке сохранить оценку пользователя на сообщение поддержки")
-
+        return False

@@ -3,10 +3,11 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram import Bot
 
+from Filters.AccessRightsFilter import AccessRightsFilter
 from keyboards.reply_kbs import kb_info
 from keyboards.inline_kbs import kb_language
 from repositories.support_messages_repository import save_message_to_support, save_support_answer_rating
-from repositories.users_repository import init_user, update_user_language
+from repositories.users_repository import init_user, update_user_language, check_user_from_db
 from aiogram.types import CallbackQuery
 from states.PlotStates import PlotStates
 from Filters.IntentFilter import IntentFilter
@@ -22,8 +23,7 @@ logger = logging.getLogger(name=__name__)
 
 # HAHDLERS
 # choose language and start
-@router.message(CommandStart())
-@router.message(IntentFilter("start"))
+@router.message(IntentFilter("start"), CommandStart())
 async def start_reply(message: types.Message):
     await message.answer(text='Привет!👋\n'
                               'Пожалуйста выбери язык, на котором тебе будет комфортно общаться:\n\n'
@@ -33,7 +33,7 @@ async def start_reply(message: types.Message):
 
 
 # ответ на умения
-@router.message(IntentFilter("skills"))
+@router.message(AccessRightsFilter(0), IntentFilter("skills"))
 async def skills(message: types.Message, user_language: str, texts: dict):
     await message.answer(text=texts[user_language]['skills_answer'])
 
@@ -43,7 +43,7 @@ language_array = ['language:RU', 'language:EN']
 
 
 # Ответ на callback запрос на смену языка
-@router.callback_query(F.data.startswith("language:"))
+@router.callback_query(AccessRightsFilter(0), F.data.startswith("language:"))
 async def call_handler(callback: CallbackQuery, texts: dict):
     match callback:
         case _ if callback.data in language_array:
@@ -53,8 +53,8 @@ async def call_handler(callback: CallbackQuery, texts: dict):
             await callback.answer()
 
 
-# Обработка оценки тикета
-@router.callback_query(F.data.startswith("ticket:"))
+# Хендлер для обра оценки тикета
+@router.callback_query(AccessRightsFilter(0), F.data.startswith("ticket:"))
 async def call_handler(callback: CallbackQuery, texts: dict, bot: Bot, user_language: str):
     splited = callback.data.split(':')
     ticket_id = splited[1]
@@ -71,14 +71,14 @@ async def call_handler(callback: CallbackQuery, texts: dict, bot: Bot, user_lang
     await callback.answer()
 
 
-# ответ на примечание
-@router.message(IntentFilter("rules"))
+# Ответ на примечание
+@router.message(AccessRightsFilter(0), IntentFilter("rules"))
 async def primec(message: types.Message, user_language: str, texts: dict):
     await message.answer(text=texts[user_language]['note_answer'], parse_mode='HTML')
 
 
 # Ответ на "Поддержка"
-@router.message(IntentFilter("support"))
+@router.message(AccessRightsFilter(0), IntentFilter("support"))
 async def skills(message: types.Message, user_language: str, state: FSMContext, texts: dict):
     await message.answer(text=texts[user_language]['support_write_message'], parse_mode='html')
     await state.set_state(SupportStates.waiting_for_message)

@@ -4,6 +4,7 @@ from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
+
 # ЗАПУСКАЮТСЯ ПРИ ВЫЗОВЕ
 # 1. Для записи пользователя в БД при начале диалога с ботом
 async def init_user(user_id: int) -> bool:
@@ -25,6 +26,7 @@ async def init_user(user_id: int) -> bool:
             return True
     except Exception:
         logger.error("Ошибка при инициализации пользователя")
+        return False
 
 
 # 1. Для обновления значения языка интерфейса пользователя
@@ -108,6 +110,7 @@ async def update_subscription_period(user_id: int, payload: str, amount: int, ch
         logger.exception(f"Ошибка при обработке платежа user: {user_id}; charge_id: {charge_id}")
         return False
 
+
 # Проверяем роль пользователя и время окончания его подписки при наличии
 async def check_user_from_db(user_id):
     try:
@@ -129,6 +132,7 @@ async def check_user_from_db(user_id):
     except Exception:
         logger.exception("Ошибка обновления статуса пользователя")
         return False
+
 
 # Для проверки и ресета количества оставшихся попыток
 async def check_and_reset_attempt_left(user_id):
@@ -167,4 +171,36 @@ async def reduce_attempts_from_db(
             return result.fetchone()[0]
     except Exception:
         logger.exception(f'Ошибка при измении количества бесплатных использований, user_id: {user_id}')
-        return 1 #Возвращаем 1 если ошибка на нашей стороны, чтобы пользователь мог использовать другую функцию и полсе ее выполнения еще раз будет обработка в этой функции
+        return 1  # Возвращаем 1 если ошибка на нашей стороны, чтобы пользователь мог использовать другую функцию и полсе ее выполнения еще раз будет обработка в этой функции
+
+
+# Функция для банов пользователей
+async def ban_user(user_id, admin_id, reason):
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("""
+            WITH updated as(
+                UPDATE users SET role_before_ban = role, role = 'banned' WHERE user_id = :user_id RETURNING user_id)
+            INSERT INTO banned_users (user_id, banned_by, banned_at, reason)
+            SELECT :user_id, :banned_by, NOW(), :reason
+            FROM updated
+            RETURNING user_id
+            """), {'user_id': user_id, 'reason': reason, 'banned_by': admin_id})
+            return True
+    except Exception:
+        logger.exception(f"Ошибка при попытке забанить пользователя")
+        return False
+
+
+# Функция для разбана пользователей
+async def unban_user(user_id):
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("""WITH unbanned as(
+            UPDATE users SET role = role_before_ban, role_before_ban = NULL WHERE user_id = :user_id RETURNING user_id)
+            UPDATE banned_users SET active = FALSE WHERE user_id IN (SELECT user_id FROM unbanned)"""),
+                               {'user_id': user_id})
+            return True
+    except Exception:
+        logger.exception(f"Ошибка при попытке разблокировать пользователя")
+        return False

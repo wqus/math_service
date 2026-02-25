@@ -8,8 +8,8 @@ from sympy.parsing.sympy_parser import standard_transformations, implicit_multip
 from db.engine import engine
 from sqlalchemy import text
 from datetime import datetime
-from keyboards.inline_kbs import answer_to_ticket_kb, load_three_tickets_kb
-from repositories.support_messages_repository import take_tickets_for_support
+from keyboards.inline_kbs import answer_to_ticket_kb, load_three_tickets_kb, unban_user_kb
+from repositories.support_messages_repository import take_tickets_for_support, take_bans
 
 transformations = (
         standard_transformations + (implicit_multiplication, convert_xor))
@@ -271,5 +271,22 @@ async def show_tickets(texts, language='language:RU', current_position: int = 0)
                 f'Ticket_id: {ticket['id']}\n\nUser_id: {ticket['user_id']}'
                 f'\n{ticket['send_time'].strftime("%Y-%m-%d %H:%M")}\n\n"{ticket['message']}"')
             tickets.append((ticket_message, await answer_to_ticket_kb(ticket['id'], ticket['user_id'],
-                                                                texts[language]['support_answer_bt'])))
+                                                                      texts[language]['support_answer_bt'])))
         return tickets, last_three_tickets, has_more
+
+
+# Функция для загрузки и отображения банов
+async def show_bans(texts, language='language:RU', current_position: int = 0):
+    last_three_bans, has_more = await take_bans(current_position)
+
+    print(last_three_bans)
+    if last_three_bans is None:  # Выводим сообщение что банов больше нет, если запуск был через команду(т.е. на получение трёх старейших банов)
+        return [(texts[language]['no_bans'], None)], last_three_bans, has_more
+    else:  # Если есть - выводим их
+        bans = []
+        for ban in last_three_bans:
+            ban_message = (
+                f'<b>Ban ID: {ban['id']}</b>\n\n<b>User ID</b>: {ban['user_id']}'
+                f'\n<b>Admin ID:</b>{ban['banned_by']}\n<i>{ban['banned_at'].strftime("%Y-%m-%d %H:%M")}</i>\n\n<b>{texts[language]['reason']}</b>\n{ban['reason']}')
+            bans.append((ban_message, await unban_user_kb(ban['user_id'], texts[language]['unban'])))
+        return bans, last_three_bans, has_more
