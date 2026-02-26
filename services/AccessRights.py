@@ -24,11 +24,7 @@ class AccessRights:
             # Если такого кеша нет или premium_until просрочен -> обращаемся к БД, берем статус оттуда и записываем в Redis
             else:
                 premium_until, role = await check_user_from_db(user_id)
-                if role == 'admin':
-                    ttl = 2592000
-                elif role is None:
-                    ttl = 1
-                else: ttl = 600
+                ttl = 600
                 # Устанавливаем значения в хэш
                 await self.redis_client.hset(
                     f'access:{user_id}',

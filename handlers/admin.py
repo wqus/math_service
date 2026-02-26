@@ -12,7 +12,7 @@ from repositories.support_messages_repository import (save_message_to_support, t
                                                       save_support_answer_to_db)
 
 from repositories.banned_users_repository import take_bans
-from repositories.users_repository import init_user, update_user_language, ban_user, unban_user
+from repositories.users_repository import init_user, update_user_language, ban_user, unban_user, add_admin, remove_admin
 from aiogram.types import CallbackQuery
 from states.PlotStates import PlotStates
 from Filters.IntentFilter import IntentFilter
@@ -62,6 +62,42 @@ async def ticket_command(message: types.Message, user_language: str, texts: dict
         await message.answer(text=texts[user_language]["user_was_banned_successful"].format(user_id=user_id))
     else:
         await message.answer(text=texts[user_language]["user_was_banned_unsuccessful"].format(user_id=user_id))
+
+
+# Хендлер для выдачи админок
+@router.message(AccessRightsFilter(3), Command("add_admin"))
+async def ticket_command(message: types.Message, user_language: str, texts: dict):
+    args = message.text.split(maxsplit=2)
+    if len(args) != 2:
+        await message.answer(text=texts[user_language]['right_add_admin_usage'])
+        return
+
+    user_id = int(args[1])
+
+    # Вызываем функцию которая выдает полюзователю роль админа
+    give_admin_result = await add_admin(user_id)
+    if give_admin_result:
+        await message.answer(text=texts[user_language]["add_admin_successful"].format(user_id=user_id))
+    else:
+        await message.answer(text=texts[user_language]["add_admin_unsuccessful"].format(user_id=user_id))
+
+
+# Хендлер для удаления админок
+@router.message(AccessRightsFilter(3), Command("remove_admin"))
+async def ticket_command(message: types.Message, user_language: str, texts: dict):
+    args = message.text.split(maxsplit=2)
+    if len(args) != 2:
+        await message.answer(text=texts[user_language]['right_remove_admin_usage'])
+        return
+
+    user_id = int(args[1])
+
+    # Вызываем функцию которая убирает у пользователя роль админа
+    give_admin_result = await remove_admin(user_id)
+    if give_admin_result:
+        await message.answer(text=texts[user_language]["remove_admin_successful"].format(user_id=user_id))
+    else:
+        await message.answer(text=texts[user_language]["remove_admin_unsuccessful"].format(user_id=user_id))
 
 
 # Хендлер для вывода списка заблокированных пользователей для владельца

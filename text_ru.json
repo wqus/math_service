@@ -34,7 +34,7 @@
   "support_failed_answer": "Возникла ошибка при сохранения ответа. Попробуйте нажать на кнопку 'Ответить' еще раз и ввести ответ заново\n\nПри возникновении ошибки обратитесь в тех.отдел",
   "text_for_user": "<b>Ответ на ваше обращение (Ticket_id:{ticket_id}):</b>\n\n{answer_message}\n\n<i>Оцените насколько вам помог данный ответ\uD83D\uDC47\uD83C\uDFFB</i>",
   "thanks_for_rating": "Спасибо за вашу оценку! \uD83D\uDE4C Ваше мнение помогает нам становиться лучше\n\n",
-  "right_ban_usage": "Использование: /ban username [причина]",
+  "right_ban_usage": "Использование: /ban user_id [причина]",
   "user_was_banned_successful": "Пользователь с user_id: {user_id} успешно забанен",
   "user_was_banned_unsuccessful": "Ошибка при попытке забанить пользователя(user_id = {user_id})",
   "load_more_bans" : "Загрузить еще забаненных пользователей?",
@@ -43,5 +43,11 @@
   "unban" : "Разбанить",
   "successful_unban" : "Пользователь (id: {user_id}) успешно разбанен!",
   "unsuccessful_unban" : "Произошла ошибка при попытке разбана пользователя, попробуйте еще раз позже",
-  "reason": "Причина бана: "
+  "reason": "Причина бана: ",
+  "right_add_admin_usage": "Использование /add_admin user_id",
+  "add_admin_successful": "Роль администратора была успешна выдана пользователю (user_id: {user_id})!",
+  "add_admin_unsuccessful": "Возникла ошибка при попытке выдать роль администратора пользователю! (user_id: {user_id})",
+  "right_remove_admin_usage": "Использование /remove_admin user_id",
+  "remove_admin_successful": "Роль администратора успешно изъята (user_id: {user_id})!",
+  "remove_admin_unsuccessful": "Возникла ошибка при попытке изъять роль администратора (user_id: {user_id})"
 }

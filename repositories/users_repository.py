@@ -192,6 +192,43 @@ async def ban_user(user_id, admin_id, reason):
         return False
 
 
+# Функция для выдачи админки
+async def add_admin(admin_id):
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("""
+            WITH updated as(
+                UPDATE users SET role = 'admin' WHERE user_id = :admin_id RETURNING user_id)
+            INSERT INTO admins (admin_id)
+            SELECT :admin_id
+            FROM updated
+            """), {'admin_id': admin_id})
+            return True
+    except Exception:
+        logger.exception(f"Ошибка при попытке забанить пользователя")
+        return False
+
+
+# Функция для выдачи админки
+async def remove_admin(admin_id):
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("""
+            WITH updated as(
+                UPDATE users SET role = CASE
+                 WHEN premium_until > NOW() THEN 'premium'
+                 WHEN premium_until <= NOW() THEN 'normal' END
+                WHERE user_id = :admin_id RETURNING user_id)
+            DELETE FROM admins
+             WHERE admin_id = :admin_id
+             AND EXISTS (SELECT 1 FROM updated)
+            """), {'admin_id': admin_id})
+            return True
+    except Exception:
+        logger.exception(f"Ошибка при попытке забанить пользователя")
+        return False
+
+
 # Функция для разбана пользователей
 async def unban_user(user_id):
     try:

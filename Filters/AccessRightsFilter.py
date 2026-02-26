@@ -17,7 +17,10 @@ class AccessRightsFilter(BaseFilter):
             logger.exception(f"Ошибка проверки роли пользователя, user_id:{message.from_user.id}")
             return False
         else:
-            if role == 'admin':
+            print(role)
+            if role == 'owner':
+                level = 3
+            elif role == 'admin':
                 level = 2
             elif role == 'premium':
                 level = 1
