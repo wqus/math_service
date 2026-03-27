@@ -1,72 +1,109 @@
-from aiogram import Router
 from aiogram import Bot
 from Filters.AccessRightsFilter import AccessRightsFilter
 from aiogram import types, F, Router
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-from keyboards.reply_kbs import kb_info
-from keyboards.inline_kbs import kb_language, answer_to_ticket_kb, load_three_tickets_kb, rate_support_answer_kb, \
-    load_three_bans_kb
-from repositories.support_messages_repository import (save_message_to_support, take_tickets_for_support, \
-                                                      save_support_answer_to_db)
-
-from repositories.banned_users_repository import take_bans
-from repositories.users_repository import init_user, update_user_language, ban_user, unban_user, add_admin, remove_admin
+from keyboards.inline_kbs import rate_support_answer_kb, load_three_bans_kb
 from aiogram.types import CallbackQuery
-from states.PlotStates import PlotStates
-from Filters.IntentFilter import IntentFilter
-from Filters.HasAttemptsLeftFilter import HasAttemptsLeft
-import logging
+
+from services.AccessService import AccessService
+from services.AdminService import AdminService
+from utils.telegram_helpers import send_bans
 
 from states.SupportStates import SupportStates
-from utils.utils import show_tickets, show_bans
 
 router = Router()
 router.message.filter(AccessRightsFilter(min_level=2))
 router.callback_query.filter(AccessRightsFilter(min_level=2))
 
-logger = logging.getLogger(name=__name__)
 
+@router.message(Command("tickets"))
+async def handle_tickets_command(message: types.Message, user_language: str, texts: dict,
+                                 ticket_service: AdminService):
+    """
+    Обрабатывает команду /tickets для вывода списка тикетов.
+    """
+    fetch_tickets_result = await ticket_service.fetch_tickets()
 
-# Хендлер, чтобы выводить заявки пользователей(по 3 штуки)
-@router.message(AccessRightsFilter(2), Command("tickets"))
-async def ticket_command(message: types.Message, user_language: str, texts: dict):
-    tickets, last_3_tickets, has_more = await show_tickets(texts, user_language)
-    for msg, kb in tickets:
-        await message.answer(text=msg, reply_markup=kb.as_markup())
-
-    if has_more:
-        kb_ask_for_more = await load_three_tickets_kb(last_3_tickets[-1]['id'],
-                                                      "✅")
-        await message.answer(text=texts[user_language]['support_load_more'],
-                             reply_markup=kb_ask_for_more.as_markup())
+    if fetch_tickets_result.success:
+        await send_bans(message, fetch_tickets_result, user_language, texts)
+        has_more_kb = load_three_bans_kb(fetch_tickets_result.data['last_ticket_id'], "✅") if fetch_tickets_result.data[
+            'has_more'] else None
+        await message.answer(text=texts[user_language][fetch_tickets_result.message_key], reply_markup=has_more_kb)
     else:
-        await message.answer(text=texts[user_language]['support_no_tickets_to_load'])
+        await message.answer(text=texts[user_language][fetch_tickets_result.message_key])
 
 
-# Хендлер для блокировки пользователей
-@router.message(AccessRightsFilter(2), Command("ban"))
-async def ticket_command(message: types.Message, user_language: str, texts: dict):
-    args = message.text.split(maxsplit=2)
-    if len(args) != 3:
-        await message.answer(text=texts[user_language]['right_ban_usage'])
-        return
+@router.message(SupportStates.waiting_for_answer)
+async def process_ticket_answer(message: types.Message, state: FSMContext, user_language: str, texts: dict,
+                                bot: Bot, ticket_service: AdminService):
+    """
+    Обрабатывает ответ администратора на тикет.
+    """
+    try:
+        data = await state.get_data()
+        ticket_message_id = data.get('ticket_message_id')
+        ticket_id = int(data.get('ticket_id'))
+        ticket_user_id = data.get('ticket_user_id')
 
-    user_id = int(args[1])
-    reason = args[2]
+        result = await ticket_service.save_support_answer(ticket_id, message.text, message.from_user.id)
+        if result.success:
+            rating_kb = await rate_support_answer_kb(ticket_id)
+            await bot.send_message(chat_id=ticket_user_id, text=message.text,
+                                   reply_markup=rating_kb.as_markup(), parse_mode='HTML')
 
-    # Вызываем функцию которая меняет роль пользователя на banned(-1)
-    ban_user_result = await ban_user(user_id, message.from_user.id, reason)
-    if ban_user_result:
-        await message.answer(text=texts[user_language]["user_was_banned_successful"].format(user_id=user_id))
-    else:
-        await message.answer(text=texts[user_language]["user_was_banned_unsuccessful"].format(user_id=user_id))
+            await bot.edit_message_reply_markup(chat_id=message.chat.id, message_id=ticket_message_id,
+                                                reply_markup=None)
+
+            await message.answer(
+                text=texts[user_language][result.message_key])
+        else:
+            await message.answer(text=texts[user_language][result.message_key])
+        await state.clear()
+    except Exception:
+        await message.answer(text=texts[user_language]['support_failed_answer'])
+        await state.clear()
 
 
-# Хендлер для выдачи админок
+@router.callback_query(F.data.startswith("admin"))
+async def handle_ticket_admin_callback(callback: CallbackQuery, state: FSMContext, user_language: str, texts: dict,
+                                       ticket_service: AdminService):
+    """
+    Обрабатывает callback-запросы для тикетов (ответ и загрузка).
+    """
+    split_data = callback.data.split(':')
+    match split_data[1]:
+        case 'answer':
+            ticket_id = split_data[2]
+            ticket_user_id = split_data[3]
+            await callback.message.answer(text=texts[user_language]['support_ask_for_answer'])
+            await state.update_data(ticket_message_id=callback.message.message_id)
+            await state.update_data(ticket_id=ticket_id)
+            await state.update_data(ticket_user_id=ticket_user_id)
+            await state.set_state(SupportStates.waiting_for_answer)
+        case 'load':
+            current_position = int(split_data[2])
+            fetch_tickets_result = await ticket_service.fetch_tickets(current_position=current_position)
+
+            if fetch_tickets_result.success:
+                await send_bans(callback.message, fetch_tickets_result, user_language, texts)
+                has_more_kb = load_three_bans_kb(fetch_tickets_result.data['last_ticket_id'], "✅") if \
+                fetch_tickets_result.data[
+                    'has_more'] else None
+                await callback.message.answer(text=texts[user_language][fetch_tickets_result.message_key],
+                                              reply_markup=has_more_kb)
+            else:
+                await callback.message.answer(text=texts[user_language][fetch_tickets_result.message_key])
+    await callback.answer()
+
+
 @router.message(AccessRightsFilter(3), Command("add_admin"))
-async def ticket_command(message: types.Message, user_language: str, texts: dict):
+async def handle_add_admin_command(message: types.Message, user_language: str, texts: dict,
+                                   access_service: AccessService):
+    """
+    Обрабатывает команду /add_admin для назначения администратора.
+    """
     args = message.text.split(maxsplit=2)
     if len(args) != 2:
         await message.answer(text=texts[user_language]['right_add_admin_usage'])
@@ -74,17 +111,17 @@ async def ticket_command(message: types.Message, user_language: str, texts: dict
 
     user_id = int(args[1])
 
-    # Вызываем функцию которая выдает полюзователю роль админа
-    give_admin_result = await add_admin(user_id)
-    if give_admin_result:
-        await message.answer(text=texts[user_language]["add_admin_successful"].format(user_id=user_id))
-    else:
-        await message.answer(text=texts[user_language]["add_admin_unsuccessful"].format(user_id=user_id))
+    assign_admin_result = await access_service.assign_admin(user_id)
+    if assign_admin_result.success:
+        await message.answer(text=texts[user_language][assign_admin_result.message_key].format(user_id=user_id))
 
 
-# Хендлер для удаления админок
 @router.message(AccessRightsFilter(3), Command("remove_admin"))
-async def ticket_command(message: types.Message, user_language: str, texts: dict):
+async def handle_remove_admin_command(message: types.Message, user_language: str, texts: dict,
+                                      access_service: AccessService):
+    """
+    Обрабатывает команду /remove_admin для удаления администратора.
+    """
     args = message.text.split(maxsplit=2)
     if len(args) != 2:
         await message.answer(text=texts[user_language]['right_remove_admin_usage'])
@@ -92,119 +129,75 @@ async def ticket_command(message: types.Message, user_language: str, texts: dict
 
     user_id = int(args[1])
 
-    # Вызываем функцию которая убирает у пользователя роль админа
-    give_admin_result = await remove_admin(user_id)
-    if give_admin_result:
-        await message.answer(text=texts[user_language]["remove_admin_successful"].format(user_id=user_id))
+    remove_admin_result = await access_service.remove_admin(user_id)
+    if remove_admin_result:
+        await message.answer(text=texts[user_language][remove_admin_result.message_key].format(user_id=user_id))
+
+
+@router.message(Command("ban"))
+async def handle_ban_user_command(message: types.Message, user_language: str, texts: dict, access_service: AccessService):
+    """
+    Обрабатывает команду /ban для блокировки пользователя.
+    """
+    args = message.text.split(maxsplit=2)
+    if len(args) != 3:
+        await message.answer(text=texts[user_language]['right_ban_usage'])
+        return
+
+    user_id = int(args[1])
+    reason = args[2]
+    ban_user_result = await access_service.ban_user(user_id, message.from_user.id, reason)
+    if ban_user_result.success:
+        await message.answer(text=texts[user_language][ban_user_result.message_key].format(user_id=user_id))
+
+
+@router.message(Command("bans_history"))
+async def handle_bans_history_command(message: types.Message, user_language: str, texts: dict, admin_service: AdminService):
+    """
+    Обрабатывает команду /bans_history для вывода истории банов.
+    """
+    fetch_bans_result = await admin_service.fetch_bans()
+    if fetch_bans_result.success:
+        await send_bans(message, fetch_bans_result, user_language, texts)
+        if fetch_bans_result.data['bans']:
+            has_more_kb = load_three_bans_kb(fetch_bans_result.data['last_ban_id'], "✅") if fetch_bans_result.data[
+                'has_more'] else None
+            await message.answer(text=texts[user_language][fetch_bans_result.message_key], reply_markup=has_more_kb)
     else:
-        await message.answer(text=texts[user_language]["remove_admin_unsuccessful"].format(user_id=user_id))
+        await message.answer(text=texts[user_language][fetch_bans_result.message_key])
 
 
-# Хендлер для вывода списка заблокированных пользователей для владельца
-@router.message(AccessRightsFilter(2), Command("bans_history"))
-async def ticket_command(message: types.Message, user_language: str, texts: dict):
-    bans, last_3_bans, has_more = await show_bans(texts, user_language)
-    for ban, kb in bans:
-        await message.answer(text=ban, reply_markup=kb.as_markup(), parse_mode='html')
-
-    if has_more:
-        kb_ask_for_more = await load_three_bans_kb(last_3_bans[-1]['id'], "✅")
-        await message.answer(text=texts[user_language]['load_more_bans'],
-                             reply_markup=kb_ask_for_more.as_markup())
-    else:
-        await message.answer(text=texts[user_language]['no_bans_to_load'])
-
-
-# Хендлер для обработки callback на разбан
 @router.callback_query(F.data.startswith("unban"))
-async def call_handler(callback: CallbackQuery, user_language: str, texts: dict, bot: Bot):
+async def handle_unban_user_callback(callback: CallbackQuery, user_language: str, texts: dict, bot: Bot,
+                                     access_service: AccessService):
+    """
+    Обрабатывает callback-запрос для разблокировки пользователя.
+    """
     user_id = int(callback.data.split(':')[1])
 
-    unban_result = await unban_user(user_id)
-    if unban_result:
-        await callback.message.answer(text=texts[user_language]['successful_unban'].format(user_id=user_id))
+    unban_result = await access_service.unban_user(user_id)
+    if unban_result.success:
+        await callback.message.answer(text=texts[user_language][unban_result.message_key].format(user_id=user_id))
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                             reply_markup=None)
     else:
-        await callback.message.answer(text=texts[user_language]['unsuccessful_unban'])
+        await callback.message.answer(text=texts[user_language][unban_result.message_key])
     await callback.answer()
 
 
-# Хендлер для дозагрузки банов
 @router.callback_query(F.data.startswith("bans"))
-async def call_handler(callback: CallbackQuery, user_language: str, texts: dict, bot: Bot):
+async def handle_load_bans_callback(callback: CallbackQuery, user_language: str, texts: dict, admin_service: AdminService):
+    """
+    Обрабатывает callback-запрос для дозагрузки списка банов.
+    """
     last_ban_id = int(callback.data.split(':')[2])
-    # Вызов функции для загрузки ещё банов
-    bans, last_3_bans, has_more = await show_bans(texts=texts, language=user_language,
-                                                  current_position=last_ban_id)
-    for ban, kb in bans:
-        await callback.message.answer(text=ban, reply_markup=kb.as_markup(), parse_mode='html')
+    fetch_bans_result = await admin_service.fetch_bans(current_position=last_ban_id)
 
-    if has_more:
-        kb_ask_for_more = await load_three_bans_kb(last_3_bans[-1]['id'], "✅")
-        await callback.message.answer(text=texts[user_language]['load_more_bans'],
-                                      reply_markup=kb_ask_for_more.as_markup())
+    if fetch_bans_result.success:
+        await send_bans(callback.message, fetch_bans_result, user_language, texts)
+        has_more_kb = load_three_bans_kb(fetch_bans_result.data['last_ban_id'], "✅") if fetch_bans_result.data[
+            'has_more'] else None
+        await callback.message.answer(text=texts[user_language][fetch_bans_result.message_key], reply_markup=has_more_kb)
     else:
-        await callback.message.answer(text=texts[user_language]['no_bans_to_load'])
+        await callback.message.answer(text=texts[user_language][fetch_bans_result.message_key])
     await callback.answer()
-
-
-# Хендлер для обработна нажатий на inline кнопки от админов
-@router.callback_query(F.data.startswith("admin"))
-async def call_handler(callback: CallbackQuery, state: FSMContext, user_language: str, texts: dict):
-    splited = callback.data.split(':')
-    match splited[1]:
-        case 'answer':
-            ticket_id = splited[2]
-            ticket_user_id = splited[3]
-            # Устанавливаем state = 'waiting_for_ticket_answer'
-            await callback.message.answer(text=texts[user_language]['support_ask_for_answer'])
-            await state.update_data(ticket_chat_id=callback.message.chat.id)
-            await state.update_data(ticket_message_id=callback.message.message_id)
-            await state.update_data(ticket_id=ticket_id)
-            await state.update_data(ticket_user_id=ticket_user_id)
-            await state.set_state(SupportStates.waiting_for_answer)
-        case 'load':
-            # Вызов функции для загрузки ещё тикетов
-            current_position = int(splited[2])
-            tickets, last_3_tickets, has_more = await show_tickets(texts=texts, language=user_language,
-                                                                   current_position=current_position)
-            for msg, kb in tickets:
-                await callback.message.answer(text=msg, reply_markup=kb.as_markup())
-
-            if has_more:
-                kb_ask_for_more = await load_three_tickets_kb(last_3_tickets[-1]['id'],
-                                                              "✅")
-                await callback.message.answer(text=texts[user_language]['support_load_more'],
-                                              reply_markup=kb_ask_for_more.as_markup())
-            else:
-                await callback.message.answer(text=texts[user_language]['support_no_tickets_to_load'])
-    await callback.answer()
-
-
-# Хендлер для ответа на тикеты
-@router.message(SupportStates.waiting_for_answer)
-async def process_answer_to_ticket(message: types.Message, state: FSMContext, user_language: str, texts: dict,
-                                   bot: Bot):
-    try:
-        data = await state.get_data()
-        ticket_chat_id = data.get('ticket_chat_id')
-        ticket_message_id = data.get('ticket_message_id')
-        ticket_id = data.get('ticket_id')
-        ticket_user_id = data.get('ticket_user_id')
-        await save_support_answer_to_db(ticket_id, message.text, message.from_user.id)  # обновляем тикет в бд
-        await message.answer(
-            text=texts[user_language]['support_success_answer'])  # Отправляем сообщение об успешной отправке
-        await state.clear()
-        text_for_user = texts[user_language]['text_for_user'].format(ticket_id=ticket_id, answer_message=message.text)
-
-        # Отправляем сообщение пользователю
-        rating_kb = await rate_support_answer_kb(ticket_id)
-        await bot.send_message(chat_id=ticket_user_id, text=text_for_user,
-                               reply_markup=rating_kb.as_markup(), parse_mode='HTML')
-
-        await bot.edit_message_reply_markup(chat_id=ticket_chat_id, message_id=ticket_message_id,
-                                            reply_markup=None)  # Убираем в списке тикетов кнопку "ответить" под текущим
-    except Exception:
-        await message.answer(text=texts[user_language]['support_failed_answer'])
-        await state.clear()

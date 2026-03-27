@@ -5,11 +5,12 @@ import io
 import matplotlib.pyplot as plt
 from sympy import parse_expr
 from sympy.parsing.sympy_parser import standard_transformations, implicit_multiplication, convert_xor
-from db.engine import engine
+from database.engine import engine
 from sqlalchemy import text
 from datetime import datetime
 from keyboards.inline_kbs import answer_to_ticket_kb, load_three_tickets_kb, unban_user_kb
-from repositories.support_messages_repository import take_tickets_for_support, take_bans
+
+
 
 transformations = (
         standard_transformations + (implicit_multiplication, convert_xor))
@@ -192,101 +193,3 @@ def generate_plot(f_numpy, expr_str: str, user_language: str) -> io.BytesIO:
     plt.close(fig)
     buf.seek(0)
     return buf
-
-
-async def save_user_message(user_id, input_message, output_message):
-    async with engine.begin() as conn:
-        await conn.execute(
-            text('''INSERT INTO history(user_id, input_message, output_message)
-                     VALUES (:user_id, :input_message, :output_message)'''),
-            {"user_id": user_id, "input_message": input_message, "output_message": output_message}
-        )
-
-
-async def requests_history(user_id, cursor=None, page_size=10, direction="next"):
-    query = "SELECT id, input_message, output_message, created_at FROM history WHERE user_id = :user_id"
-    params = {"user_id": user_id}
-
-    # курсорная навигация
-    if cursor:
-        cursor_id, cursor_created_at = cursor
-        params["created_at"] = cursor_created_at
-        params["id"] = cursor_id
-        print(f"CURSOR: {cursor}")
-        if direction == "next":
-            query += " AND (created_at < :created_at OR (created_at = :created_at AND id < :id))"
-        elif direction == "prev":
-            query += " AND (created_at > :created_at OR (created_at = :created_at AND id > :id))"
-
-    if direction == "prev":
-        query += f" ORDER BY created_at, id LIMIT {page_size}"
-    else:
-        query += f" ORDER BY created_at DESC, id DESC LIMIT {page_size}"
-
-    async with engine.connect() as conn:
-        result = await conn.execute(
-            text(query), params)
-
-    prev_cursor, next_cursor = None, None
-
-    rows = result.fetchall()
-    print(rows)
-    if rows:
-        if direction == "prev":
-            rows.reverse()  # чтобы вернуть естественный порядок
-        first = rows[0]
-        last = rows[-1]
-        async with engine.connect() as conn:
-            newer = await conn.execute(text(
-                """
-                SELECT 1 FROM history
-                WHERE user_id = :user_id AND (created_at > :created_at OR (created_at = :created_at AND id > :id))
-                LIMIT 1
-                """), {'user_id': user_id, 'created_at': first[3], 'id': first[0]})
-            if newer.first():
-                prev_cursor = (first[0], first[3])
-            # проверяем наличие записей старее (для next-кнопки)
-            older = await conn.execute(text(
-                """
-                SELECT 1 FROM history
-                WHERE user_id = :user_id
-                AND (created_at < :created_at OR (created_at = :created_at AND id < :id))
-                LIMIT 1
-                """), {'user_id': user_id, 'created_at': last[3], 'id': last[0]})
-            if older.first():
-                next_cursor = (last[0], last[3])
-    return rows, next_cursor, prev_cursor
-
-
-# Функция для загрузки и отображения тикетов
-async def show_tickets(texts, language='language:RU', current_position: int = 0):
-    last_three_tickets, has_more = await take_tickets_for_support(current_position)
-
-    if last_three_tickets is None:  # Выводим сообщение что тикетов больше нет, если запуск был через команду(т.е. на получение трёх старейших тикетов)
-        return [(texts[language]['support_no_tickets'], None)], last_three_tickets, has_more
-    else:  # Если есть - выводим их
-        tickets = []
-        for ticket in last_three_tickets:
-            ticket_message = (
-                f'Ticket_id: {ticket['id']}\n\nUser_id: {ticket['user_id']}'
-                f'\n{ticket['send_time'].strftime("%Y-%m-%d %H:%M")}\n\n"{ticket['message']}"')
-            tickets.append((ticket_message, await answer_to_ticket_kb(ticket['id'], ticket['user_id'],
-                                                                      texts[language]['support_answer_bt'])))
-        return tickets, last_three_tickets, has_more
-
-
-# Функция для загрузки и отображения банов
-async def show_bans(texts, language='language:RU', current_position: int = 0):
-    last_three_bans, has_more = await take_bans(current_position)
-
-    print(last_three_bans)
-    if last_three_bans is None:  # Выводим сообщение что банов больше нет, если запуск был через команду(т.е. на получение трёх старейших банов)
-        return [(texts[language]['no_bans'], None)], last_three_bans, has_more
-    else:  # Если есть - выводим их
-        bans = []
-        for ban in last_three_bans:
-            ban_message = (
-                f'<b>Ban ID: {ban['id']}</b>\n\n<b>User ID</b>: {ban['user_id']}'
-                f'\n<b>Admin ID:</b>{ban['banned_by']}\n<i>{ban['banned_at'].strftime("%Y-%m-%d %H:%M")}</i>\n\n<b>{texts[language]['reason']}</b>\n{ban['reason']}')
-            bans.append((ban_message, await unban_user_kb(ban['user_id'], texts[language]['unban'])))
-        return bans, last_three_bans, has_more

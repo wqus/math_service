@@ -1,2 +1,4 @@
 proverki.py
 docker-compose.yml
+locales/text_en.json
+locales/text_ru.json

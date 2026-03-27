@@ -1,182 +1,199 @@
+import asyncio
+
 from aiogram import types, F, Router
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
 from sympy import Eq, solve, symbols
+import datetime as dt
 
 from Filters.AccessRightsFilter import AccessRightsFilter
 from Filters.IntentFilter import IntentFilter
 from keyboards.inline_kbs import page_keyboard
 from keyboards.reply_kbs import kb_info
-from services.AccessRights import AccessRights
+from presenters.history_presenter import format_history_list
+from services.AccessService import AccessService
+from services.HistoryService import HistoryService
 from utils.utils import *
 from states.PlotStates import PlotStates
-import datetime as dt
 
 router = Router()
 
 
 @router.message(AccessRightsFilter(0), IntentFilter("history"))
-async def user_history(message: types.Message, texts: dict, user_language: str = "RU"):
-    rows, next_cursor, prev_cursor = await requests_history(message.from_user.id)
+async def show_user_history(message: types.Message, texts: dict, history_service: HistoryService,
+                            user_language: str = "RU"):
+    """
+    Показывает историю сообщений пользователя.
+    """
+    result = await history_service.get_user_history(message.from_user.id)
 
-    kb = await page_keyboard(next_cursor, prev_cursor)
+    if result.success:
+        formatted_history_text, pagination_kb = await format_history_list(
+            result.data['rows'],
+            result.data['next_cursor'],
+            result.data['prev_cursor'],
+            texts,
+            language=user_language
+        )
+        await message.answer(
+            text=formatted_history_text,
+            parse_mode="HTML",
+            reply_markup=pagination_kb.as_markup() if pagination_kb else None
+        )
+    else:
+        await message.answer(
+            text=texts[user_language]['history_error'],
+            parse_mode="HTML")
 
-    history_text = ""
-    for row in rows:
-        input_message = row[1].replace(">", "&gt;").replace("<", "&lt;")
-        output_message = row[2].replace(">", "&gt;").replace("<", "&lt;")
-        history_text += f"• {input_message};\t{texts[user_language]['answer']} <b>{output_message}</b>\n"
 
-    if not history_text:
-        history_text = "Пока нет сохранённой истории."
-
-    await message.answer(
-        text=f"{texts[user_language]['history_answer']}\n\n{history_text}",
-        parse_mode="HTML",
-        reply_markup=kb.as_markup() if kb else None
-    )
-
-
-# Решение уравнений
 @router.message(AccessRightsFilter(0), F.text.contains("="))
-async def solve_equation_or_expression(message: types.Message, user_language: str, texts: dict):
+async def solve_equation(message: types.Message, user_language: str, texts: dict, history_service: HistoryService):
+    """
+    Решает математическое уравнение.
+    """
     try:
-        # Вводим переменную
         x = symbols('x')
-
-        # Преобразовываем уравнение
         user_input = message.text
-
-        # Разделяем уравнение на левую и правую части
         equation_parts = user_input.split('=')
 
-        # Решаем уравнение и выводим ответ пользователю
         if len(equation_parts) == 2:
             left = equation_parts[0]
             right = equation_parts[1]
 
             equation = Eq(safe_parse_to_numpy_answer(left), safe_parse_to_numpy_answer(right))
+            solutions = solve(equation, x)
 
-            # Решаем уравнение
-            result = solve(equation, x)
-
-            formatted_res = ('; '.join(
+            formatted_solutions = ('; '.join(
                 [f'x = {str(round(sol, 3)).rstrip("0").rstrip(".") if "." in str(sol) else str(sol)}' for sol in
-                 result]))
+                 solutions]))
 
-            await message.answer(text=formatted_res)
-            await save_user_message(message.from_user.id, user_input, formatted_res)
-        else:  # иначе сообщаем о некорректном вводе
+            await message.answer(text=formatted_solutions)
+            await history_service.save_message(message.from_user.id, user_input, formatted_solutions)
+        else:
             await message.answer(text=texts[user_language]['wrong_input'])
 
-    except Exception as e:  # выводим в сообщение об ошибке
-        await message.answer(text=f'{texts[user_language]['error']}{e}')
+    except Exception as e:
+        await message.answer(text=f'{texts[user_language]["error"]}{e}')
 
 
-# Хендлер для неравенств
 @router.message(AccessRightsFilter(0), lambda message: any(s in message.text for s in ['<', '<=', '>=', '>']))
-async def solve_inequality(message: types.Message, user_language: str, texts: dict):
+async def solve_inequality(message: types.Message, user_language: str, texts: dict, history_service: HistoryService):
+    """
+    Решает математическое неравенство.
+    """
     try:
         user_input = message.text.lower()
-
-        # Заменяем символы для представления бесконечности
         user_input = user_input.replace('oo', 'sp.oo')
 
-        # Решаем неравенство
         x = sp.symbols('x')
         solution = sp.solve_univariate_inequality(safe_parse_to_numpy_answer(user_input), x, relational=False)
 
-        # в красивую строку
         formatted_solution = f'x ∈ {sp.pretty(solution, use_unicode=True)}'
         await message.answer(text=formatted_solution)
-        await save_user_message(message.from_user.id, user_input, formatted_solution)
+        await history_service.save_message(message.from_user.id, user_input, formatted_solution)
 
-    except Exception as e:  # выводим в сообщение об ошибке
-        await message.answer(text=f'{texts[user_language]['error']}{e}')
+    except Exception as e:
+        await message.answer(text=f'{texts[user_language]["error"]}{e}')
 
 
-# Хендлер обработки запросов по состоянию PlotStates.waiting_for_function
 @router.message(PlotStates.waiting_for_function)
-async def process_plot(message: types.Message, state: FSMContext, user_language: str, texts: dict,
-                       access_rights: AccessRights):
+async def generate_and_send_plot(
+    message: types.Message,
+    state: FSMContext,
+    user_language: str,
+    texts: dict,
+    access_service: AccessService,
+    history_service: HistoryService
+):
+    """
+    Генерирует и отправляет график функции.
+    """
     try:
-        text = message.text.strip()
-        original_text = text
-
-        # Парсим выражение в безопасную NumPy-функцию
-        f_numpy = safe_parse_to_numpy_function(text)
-        # Генерируем график
+        original_text = message.text.strip()
+        f_numpy = safe_parse_to_numpy_function(original_text)
         plot_buf = generate_plot(f_numpy, original_text, user_language)
-        raw_bytes = plot_buf.read()
-        photo_file = types.BufferedInputFile(raw_bytes, "plot.png")
-        # Отправляем результат
 
+        raw_bytes = plot_buf.read()
+        print(f"Размер фото: {len(raw_bytes)} байт")
+
+        x_range = (-10, 10)
         caption_template = texts[user_language]['plot_caption']
         caption_filled = caption_template.format(
             original_text=original_text,
             x_min=x_range[0],
             x_max=x_range[1]
         )
-        await save_user_message(message.from_user.id, text, 'plot📈')
-        await message.answer_photo(photo=photo_file, caption=caption_filled, parse_mode='HTML', reply_markup = await kb_info(texts, user_language))
+
+        await history_service.save_message(message.from_user.id, original_text, 'plot📈')
+
+        reply_markup = await kb_info(texts, user_language)
+
+        await message.answer_photo(
+            photo=types.BufferedInputFile(raw_bytes, filename="plot.png"),
+            caption=caption_filled,
+            parse_mode='HTML',
+            reply_markup=reply_markup
+        )
 
         await state.clear()
+        attempts_left = await access_service.decrease_attempts(message.from_user.id)
 
-        attempts_left = await access_rights.reduce_number_of_attempts(message.from_user.id)
         if attempts_left <= 0:
-            await message.answer(text=texts[user_language]['attempts_ended'], parse_mode='html')
-    except Exception:
-        # Обработка сообщений об ошибках и запрос на повторный ввод
-        await message.answer(text=texts[user_language][f"plot_try_again"])
+            await message.answer(texts[user_language]['attempts_ended'], parse_mode='HTML')
+
+    except Exception as e:
+        print(f"Ошибка при отправке графика: {e}")
+        import traceback
+        traceback.print_exc()
+        await message.answer(texts[user_language]["plot_try_again"])
+        await state.clear()
 
 
-# обработчик кнопок листания
 @router.callback_query(AccessRightsFilter(0), F.data.startswith("user:history:"))
-async def call_handler(callback: CallbackQuery, texts: dict, user_language: str = "RU"):
-
+async def paginate_history(callback: CallbackQuery, texts: dict, history_service: HistoryService,
+                           user_language: str = "RU"):
+    """
+    Обрабатывает пагинацию истории сообщений.
+    """
     parts = callback.data.split(":", 3)
-    direction = parts[2]  # "next" или "prev"
+    direction = parts[2]
     cursor_split = parts[3].split("|", 1)
-    cursor = (int(cursor_split[0]), dt.datetime.fromisoformat(cursor_split[1]))  # id + created_at
+    cursor = (int(cursor_split[0]), dt.datetime.fromisoformat(cursor_split[1]))
 
-    rows, next_cursor, prev_cursor = await requests_history(
+    result = await history_service.get_user_history(
         callback.from_user.id,
         cursor=cursor,
         direction=direction
     )
 
-    kb = await page_keyboard(next_cursor, prev_cursor)
-
-    history_text = ""
-    for row in rows:
-        input_message = row[1].replace(">", "&gt;").replace("<", "&lt;")
-        output_message = row[2].replace(">", "&gt;").replace("<", "&lt;")
-        history_text += f"• {input_message};\t{texts[user_language]['answer']} <b>{output_message}</b>\n"
-
-    if not history_text:
-        history_text = "Пока нет сохранённой истории."
-
-    await callback.message.edit_text(
-        text=f"{texts[user_language]['history_answer']}\n\n{history_text}",
-        parse_mode="HTML",
-        reply_markup=kb.as_markup() if kb else None
+    formatted_history_text, pagination_kb = await format_history_list(
+        result.data['rows'],
+        result.data['next_cursor'],
+        result.data['prev_cursor'],
+        texts,
+        language=user_language
     )
 
+    await callback.message.edit_text(
+        text=formatted_history_text,
+        parse_mode="HTML",
+        reply_markup=pagination_kb.as_markup() if pagination_kb else None
+    )
     await callback.answer()
 
 
-# Хендлер для остальных сообщений
 @router.message(AccessRightsFilter(0), IntentFilter("unknown"))
-async def handle_expression(message: types.Message, user_language: str, texts: dict):
+async def evaluate_expression(message: types.Message, user_language: str, texts: dict, history_service: HistoryService):
+    """
+    Вычисляет математическое выражение.
+    """
     try:
-        # Преобразовываем выражение
         user_input = message.text.lower()
 
-        # Решаем выражение
         answer = safe_parse_to_numpy_answer(user_input)
-        formatted_res = str(round(answer, 3)).rstrip('0').rstrip('.') if '.' in str(answer) else str(answer)
+        formatted_result = str(round(answer, 3)).rstrip('0').rstrip('.') if '.' in str(answer) else str(answer)
 
-        await message.answer(text=formatted_res)
-        await save_user_message(message.from_user.id, user_input, formatted_res)
+        await message.answer(text=formatted_result)
+        await history_service.save_message(message.from_user.id, user_input, formatted_result)
     except Exception as e:
-        await message.answer(text=f'{texts[user_language]['error']}{e}')
+        await message.answer(text=f'{texts[user_language]["error"]}{e}')

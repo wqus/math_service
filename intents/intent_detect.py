@@ -3,7 +3,6 @@ from intents.intent_keywords import intent_keywords
 
 def detect_intent(text: str, lang: str):
     text = text.lower().strip()
-    print(lang)
     for intent_key, languages in intent_keywords.items():
         keywords = languages.get(lang, [])
 

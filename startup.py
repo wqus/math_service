@@ -3,27 +3,23 @@ from logging.handlers import RotatingFileHandler
 
 import aiofiles
 import redis.asyncio as redis
+from aiogram.client.telegram import TelegramAPIServer
 from aiogram.fsm.storage.redis import RedisStorage
 import logging
-
-from config import WEBHOOK_URL_FULL_PATH
+from core.config import WEBHOOK_URL_FULL_PATH
 import matplotlib
-from config import TOKEN
+from core.config import TOKEN
 from aiogram import Bot, Dispatcher
 from handlers.admin import router as admin_router
 from handlers.common import router as common_router
 from handlers.user import router as user_router
 from handlers.payments import router as payments_router
 from aiogram.client.session.aiohttp import AiohttpSession
+logger = logging.getLogger(name=__name__)
 
-from services.AccessRights import AccessRights
-
-logger = logging.getLogger(name = __name__)
 
 async def init_bot():
     try:
-        #Создаем сессию
-        logger.debug("Сессия создана")
         session = AiohttpSession()
 
         logger.info("Инициализация бота")
@@ -39,13 +35,12 @@ async def init_bot():
         dp = Dispatcher(storage=storage)
 
         logger.info("Подключение роутеров")
-        dp.include_routers(admin_router,common_router,user_router,payments_router)
-
-        dp['access_rights'] = AccessRights(redis_client)
-        return bot, dp
+        dp.include_routers(admin_router, common_router, user_router, payments_router)
+        return bot, dp, redis_client
     except Exception:
         logger.critical("Не удалось запустить бота — критическая ошибка инициализации", exc_info=True)
         raise
+
 
 def init_log():
     root_logger = logging.getLogger()
@@ -55,10 +50,10 @@ def init_log():
     root_logger.propagate = True
     formatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 
-    #Хендлер для записи в файл с ограничением размера и количества лог-файлов
+    # Хендлер для записи в файл с ограничением размера и количества лог-файлов
     handler = RotatingFileHandler(
         'logs/bot.log',
-        maxBytes=10*1024*1024,
+        maxBytes=10 * 1024 * 1024,
         backupCount=5,
         encoding='utf-8'
     )
@@ -68,7 +63,7 @@ def init_log():
 
     root_logger.addHandler(handler)
 
-    #Хендлер для вывода в консоль.
+    # Хендлер для вывода в консоль.
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
@@ -76,15 +71,17 @@ def init_log():
     root_logger.addHandler(console_handler)
     return root_logger
 
-async def init_redis(): #устанавливает соединение с редис
+
+async def init_redis():  # устанавливает соединение с редис
     try:
         logger.info("Создание redis_client")
         redis_client = await redis.Redis(host='localhost', port=6379, db=0, decode_responses=True, max_connections=25,
-                                   health_check_interval=30, socket_timeout=4)
+                                         health_check_interval=30, socket_timeout=4)
         return redis_client
     except Exception:
         logger.error("Ошибка создания redis_client")
         raise
+
 
 async def close_redis(redis_client, dispatcher: Dispatcher):  # on_shutdown, закрывает соединение с редис
     try:
@@ -94,15 +91,17 @@ async def close_redis(redis_client, dispatcher: Dispatcher):  # on_shutdown, з�
     except Exception:
         logger.error("Ошибка при закрытие redis_client")
 
-#webhook register
+
+# webhook register
 async def webhook_startup(bot: Bot):
     try:
         matplotlib.use('Agg')
         logger.info("Установка webhook")
-        await bot.set_webhook(url = WEBHOOK_URL_FULL_PATH)
+        await bot.set_webhook(url=WEBHOOK_URL_FULL_PATH)
     except Exception:
         logger.exception("Ошибка при работе webhook_startup")
         raise
+
 
 async def webhook_shutdown(bot, dp, redis_client):
     try:
@@ -113,18 +112,18 @@ async def webhook_shutdown(bot, dp, redis_client):
     except Exception:
         logger.exception("Ошибка при работе функции webhook_shutdown")
 
-#1. Загрузка текстовых ресурсов
+
+# 1. Загрузка текстовых ресурсов
 async def load_texts():
     try:
         logging.info("Загрузка текстов")
-        async with aiofiles.open('D:\\Python_project\\Math_Bot\\text_ru.json', 'r', encoding='utf-8') as f:
+        async with aiofiles.open('D:\\Python_project\\Math_Bot\\locales\\text_ru.json', 'r', encoding='utf-8') as f:
             ru_content = await f.read()
             texts_ru = json.loads(ru_content)
-        async with aiofiles.open('D:\\Python_project\\Math_Bot\\text_en.json', 'r', encoding='utf-8') as f:
+        async with aiofiles.open('D:\\Python_project\\Math_Bot\\locales\\text_en.json', 'r', encoding='utf-8') as f:
             en_content = await f.read()
             texts_en = json.loads(en_content)
         return {'language:RU': texts_ru, 'language:EN': texts_en}
     except FileNotFoundError:
         logger.error("Ошибка загрузки текстов")
         raise
-
