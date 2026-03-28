@@ -71,7 +71,7 @@ async def main():
         dp.shutdown.register(shutdown)
 
         if MODE == 'dev':
-            dp.start_polling(bot)
+            await dp.start_polling(bot)
         else:
             logger.info("Регистрация SimpleRequestHandler")
             SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
@@ -106,6 +106,3 @@ async def main():
         logger.critical("Ошибка при работе main функции: %s", e)
         raise
 
-
-if __name__ == '__main__':
-    asyncio.run(main())

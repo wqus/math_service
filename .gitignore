@@ -1,2 +1,5 @@
 .env.dev
 .env.prod
+
+bot/bot.log
+docker-compose.yml

@@ -59,7 +59,7 @@ def init_log():
 
     # Хендлер для записи в файл с ограничением размера и количества лог-файлов
     file_handler = RotatingFileHandler(
-        'logs/bot.log',
+        'bot/logs/bot.log',
         maxBytes=10 * 1024 * 1024,
         backupCount=5,
         encoding='utf-8'
@@ -135,11 +135,11 @@ async def load_texts():
     """
     try:
         logging.info("Загрузка текстовых ресурсов")
-        async with aiofiles.open('/bot/locales/text_ru.json', 'r', encoding='utf-8') as ru_file:
+        async with aiofiles.open('D:\\Python_project\\Math_Bot\\bot\\locales\\text_ru.json', 'r', encoding='utf-8') as ru_file:
             ru_content = await ru_file.read()
             texts_ru = json.loads(ru_content)
 
-        async with aiofiles.open('/bot/locales/text_en.json', 'r', encoding='utf-8') as en_file:
+        async with aiofiles.open('D:\\Python_project\\Math_Bot\\bot\\locales\\text_en.json', 'r', encoding='utf-8') as en_file:
             en_content = await en_file.read()
             texts_en = json.loads(en_content)
 
