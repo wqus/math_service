@@ -1,7 +1,2 @@
-docker-compose.yml
-
-bot/locales/text_en.json
-bot/locales/text_ru.json
-
-bot/.env.prod
-bot/.env.dev
+.env.dev
+.env.prod

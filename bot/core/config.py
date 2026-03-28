@@ -1,4 +1,9 @@
 import os
+from dotenv import load_dotenv
+
+env_file = os.getenv("ENV_FILE")  # ENV_FILE=".env.dev" или ".env.prod"
+if env_file:
+    load_dotenv(env_file)
 
 MODE = os.getenv('MODE')
 
