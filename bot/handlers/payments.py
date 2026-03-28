@@ -3,12 +3,12 @@ import logging
 import aiogram
 from aiogram import F
 from aiogram.types import Message
-from keyboards.inline_kbs import payment_kb
-from services.AccessService import AccessService
-from Filters.IntentFilter import IntentFilter
+from bot.keyboards.inline_kbs import payment_kb
+from bot.services.AccessService import AccessService
+from bot.Filters.IntentFilter import IntentFilter
 
-from services.PaymentsService import PaymentsService
-from utils.telegram_helpers import create_stars_invoice_link
+from bot.services.PaymentsService import PaymentsService
+from bot.utils.telegram_helpers import create_stars_invoice_link
 
 router = aiogram.Router()
 

@@ -1,5 +1,5 @@
 from aiogram import BaseMiddleware
-from intents.intent_detect import detect_intent
+from bot.intents.intent_detect import detect_intent
 
 class IntentMiddleware(BaseMiddleware):
     async def __call__(self, handler, event, data):

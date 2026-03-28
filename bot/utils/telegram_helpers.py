@@ -1,9 +1,9 @@
 from aiogram import types, Bot
 from aiogram.types import LabeledPrice
 
-from core.ServiceResult import ServiceResult
-from presenters.admin_presenter import format_ban_list
-from presenters.admin_presenter import format_tickets_list
+from bot.core.ServiceResult import ServiceResult
+from bot.presenters.admin_presenter import format_ban_list
+from bot.presenters.admin_presenter import format_tickets_list
 
 
 async def send_tickets(message: types.Message, result: ServiceResult, language: str, texts: dict):

@@ -5,12 +5,6 @@ import io
 import matplotlib.pyplot as plt
 from sympy import parse_expr
 from sympy.parsing.sympy_parser import standard_transformations, implicit_multiplication, convert_xor
-from database.engine import engine
-from sqlalchemy import text
-from datetime import datetime
-from keyboards.inline_kbs import answer_to_ticket_kb, load_three_tickets_kb, unban_user_kb
-
-
 
 transformations = (
         standard_transformations + (implicit_multiplication, convert_xor))

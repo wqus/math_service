@@ -1,7 +1,7 @@
 import logging
 
 from sqlalchemy.exc import SQLAlchemyError
-from repositories.users_repository import UserRepository
+from bot.repositories.users_repository import UserRepository
 
 logger = logging.getLogger(__name__)
 

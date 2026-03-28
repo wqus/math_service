@@ -1,20 +1,17 @@
-import asyncio
-
 from aiogram import types, F, Router
-from aiogram.types import CallbackQuery, FSInputFile
+from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 from sympy import Eq, solve, symbols
 import datetime as dt
 
-from Filters.AccessRightsFilter import AccessRightsFilter
-from Filters.IntentFilter import IntentFilter
-from keyboards.inline_kbs import page_keyboard
-from keyboards.reply_kbs import kb_info
-from presenters.history_presenter import format_history_list
-from services.AccessService import AccessService
-from services.HistoryService import HistoryService
-from utils.utils import *
-from states.PlotStates import PlotStates
+from bot.Filters.AccessRightsFilter import AccessRightsFilter
+from bot.Filters.IntentFilter import IntentFilter
+from bot.keyboards.reply_kbs import kb_info
+from bot.presenters.history_presenter import format_history_list
+from bot.services.AccessService import AccessService
+from bot.services.HistoryService import HistoryService
+from bot.utils.utils import *
+from bot.states.PlotStates import PlotStates
 
 router = Router()
 

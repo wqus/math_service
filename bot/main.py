@@ -15,12 +15,12 @@ from services.CaсheService import CacheService
 from services.HistoryService import HistoryService
 from services.PaymentsService import PaymentsService
 from services.UserService import UserService
-from startup import webhook_shutdown, webhook_startup, init_bot, load_texts, init_log
+from startup import shutdown, startup, init_bot, load_texts, init_log
 from aiohttp import web
 from middlewares.user_language import InjectLanguage
 from middlewares.IntentMW import IntentMiddleware
 from core.config import WEBHOOK_PATH, LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST
-
+from core.config import MODE
 
 async def main():
     """
@@ -67,37 +67,41 @@ async def main():
         dp['payments_service'] = payments_service
         dp['user_service'] = user_service
 
-        logger.info("Регистрация SimpleRequestHandler")
-        SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
-        dp.startup.register(webhook_startup)
-        dp.shutdown.register(webhook_shutdown)
+        dp.startup.register(startup)
+        dp.shutdown.register(shutdown)
 
-        # Обертки для передачи dp startup в web app
-        async def on_startup(app: Application):
-            """
-            Запускает startup-функции диспетчера при старте приложения.
-            """
-            logger.info("Запуск startup функций диспетчера")
-            await dp.emit_startup(bot)
+        if MODE == 'dev':
+            dp.start_polling(bot)
+        else:
+            logger.info("Регистрация SimpleRequestHandler")
+            SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
 
-        async def on_shutdown(app: Application):
-            """
-            Запускает shutdown-функции диспетчера при остановке приложения.
-            """
-            logger.info("Запуск shutdown функций диспетчера")
-            await dp.emit_shutdown(bot)
+            # Обертки для передачи dp startup в web app
+            async def on_startup(app: Application):
+                """
+                Запускает startup-функции диспетчера при старте приложения.
+                """
+                logger.info("Запуск startup функций диспетчера")
+                await dp.emit_startup(bot)
 
-        app.on_startup(on_startup)
-        app.on_shutdown(on_shutdown)
+            async def on_shutdown(app: Application):
+                """
+                Запускает shutdown-функции диспетчера при остановке приложения.
+                """
+                logger.info("Запуск shutdown функций диспетчера")
+                await dp.emit_shutdown(bot)
 
-        # Запуск сервера
-        logger.info("Запуск веб-сервера")
-        runner = web.AppRunner(app)
-        await runner.setup()
-        site = web.TCPSite(runner=runner, host=LOCAL_WEBHOOK_HOST, port=LOCAL_WEBHOOK_PORT)
+            app.on_startup(on_startup)
+            app.on_shutdown(on_shutdown)
 
-        await site.start()
-        await asyncio.Future()
+            # Запуск сервера
+            logger.info("Запуск веб-сервера")
+            runner = web.AppRunner(app)
+            await runner.setup()
+            site = web.TCPSite(runner=runner, host=LOCAL_WEBHOOK_HOST, port=LOCAL_WEBHOOK_PORT)
+
+            await site.start()
+            await asyncio.Future()
     except Exception as e:
         logger.critical("Ошибка при работе main функции: %s", e)
         raise

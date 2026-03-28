@@ -2,19 +2,19 @@ from aiogram import types, F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 
-from Filters.AccessRightsFilter import AccessRightsFilter
-from keyboards.reply_kbs import kb_info
-from keyboards.inline_kbs import kb_language
+from bot.Filters.AccessRightsFilter import AccessRightsFilter
+from bot.keyboards.reply_kbs import kb_info
+from bot.keyboards.inline_kbs import kb_language
 from aiogram.types import CallbackQuery
 
-from services.AdminService import AdminService
-from services.UserService import UserService
-from states.PlotStates import PlotStates
-from Filters.IntentFilter import IntentFilter
-from Filters.HasAttemptsLeftFilter import HasAttemptsLeft
+from bot.services.AdminService import AdminService
+from bot.services.UserService import UserService
+from bot.states.PlotStates import PlotStates
+from bot.Filters.IntentFilter import IntentFilter
+from bot.Filters.HasAttemptsLeftFilter import HasAttemptsLeft
 import logging
 
-from states.SupportStates import SupportStates
+from bot.states.SupportStates import SupportStates
 
 router = Router()
 

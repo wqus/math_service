@@ -1,7 +1,7 @@
 from sqlalchemy.exc import SQLAlchemyError
 
-from core.ServiceResult import ServiceResult
-from repositories.history_repository import HistoryRepository
+from bot.core.ServiceResult import ServiceResult
+from bot.repositories.history_repository import HistoryRepository
 
 
 class HistoryService:

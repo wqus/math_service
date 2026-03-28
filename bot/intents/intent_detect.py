@@ -1,5 +1,5 @@
-from intents.Intent import Intent
-from intents.intent_keywords import intent_keywords
+from bot.intents.Intent import Intent
+from bot.intents.intent_keywords import intent_keywords
 
 def detect_intent(text: str, lang: str):
     text = text.lower().strip()
