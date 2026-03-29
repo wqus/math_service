@@ -1,9 +1,9 @@
 import json
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 import aiofiles
 import redis.asyncio as redis
-from aiogram.client.telegram import TelegramAPIServer
 from aiogram.fsm.storage.redis import RedisStorage
 import logging
 from core.config import WEBHOOK_URL_FULL_PATH
@@ -84,7 +84,7 @@ async def init_redis():
     try:
         logger.info("Создание Redis клиента")
         redis_client = await redis.Redis(
-            host='localhost',
+            host='redis',
             port=6379,
             db=0,
             decode_responses=True,
@@ -135,11 +135,13 @@ async def load_texts():
     """
     try:
         logging.info("Загрузка текстовых ресурсов")
-        async with aiofiles.open('D:\\Python_project\\Math_Bot\\bot\\locales\\text_ru.json', 'r', encoding='utf-8') as ru_file:
+        file_path_ru = Path(__file__).parent / 'locales' / 'text_ru.json'
+        async with aiofiles.open(file_path_ru, 'r', encoding='utf-8') as ru_file:
             ru_content = await ru_file.read()
             texts_ru = json.loads(ru_content)
 
-        async with aiofiles.open('D:\\Python_project\\Math_Bot\\bot\\locales\\text_en.json', 'r', encoding='utf-8') as en_file:
+        file_path_en = Path(__file__).parent / 'locales' / 'text_en.json'
+        async with aiofiles.open(file_path_en, 'r', encoding='utf-8') as en_file:
             en_content = await en_file.read()
             texts_en = json.loads(en_content)
 
