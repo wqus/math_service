@@ -105,6 +105,3 @@ async def main():
     except Exception as e:
         logger.critical("Ошибка при работе main функции: %s", e)
         raise
-
-if __name__ == "__main__":
-    asyncio.run(main())
