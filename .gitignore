@@ -3,3 +3,10 @@
 
 bot/logs/bot.log
 docker-compose.yml
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.idea/
+.venv/
