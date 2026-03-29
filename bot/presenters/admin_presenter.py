@@ -1,4 +1,4 @@
-from bot.keyboards.inline_kbs import answer_to_ticket_kb, unban_user_kb
+from keyboards.inline_kbs import answer_to_ticket_kb, unban_user_kb
 
 
 async def format_tickets_list(tickets, texts, language) -> list:

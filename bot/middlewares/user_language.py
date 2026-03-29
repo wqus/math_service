@@ -1,6 +1,6 @@
 from aiogram import BaseMiddleware
 from sqlalchemy import text
-from bot.database.engine import engine
+from database.engine import engine
 
 class InjectLanguage(BaseMiddleware):
     #Получаем данные о языке интерфейса пользователя.

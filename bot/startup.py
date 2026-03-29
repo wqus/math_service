@@ -15,6 +15,7 @@ from handlers.common import router as common_router
 from handlers.user import router as user_router
 from handlers.payments import router as payments_router
 from aiogram.client.session.aiohttp import AiohttpSession
+from core.config import REDIS_HOST
 
 logger = logging.getLogger(name=__name__)
 
@@ -84,7 +85,7 @@ async def init_redis():
     try:
         logger.info("Создание Redis клиента")
         redis_client = await redis.Redis(
-            host='redis',
+            host=f'{REDIS_HOST}',
             port=6379,
             db=0,
             decode_responses=True,

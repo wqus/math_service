@@ -1,17 +1,17 @@
 from aiogram import Bot
-from bot.Filters.AccessRightsFilter import AccessRightsFilter
+from Filters.AccessRightsFilter import AccessRightsFilter
 from aiogram import types, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-from bot.keyboards.inline_kbs import rate_support_answer_kb, load_three_bans_kb
+from keyboards.inline_kbs import rate_support_answer_kb, load_three_bans_kb
 from aiogram.types import CallbackQuery
 
-from bot.services.AccessService import AccessService
-from bot.services.AdminService import AdminService
-from bot.utils.telegram_helpers import send_bans
+from services.AccessService import AccessService
+from services.AdminService import AdminService
+from utils.telegram_helpers import send_bans
 
-from bot.states.SupportStates import SupportStates
+from states.SupportStates import SupportStates
 
 router = Router()
 router.message.filter(AccessRightsFilter(min_level=2))

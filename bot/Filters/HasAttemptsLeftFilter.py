@@ -1,6 +1,6 @@
 from aiogram.filters import BaseFilter
 from aiogram import types
-from bot.services.AccessService import AccessService
+from services.AccessService import AccessService
 import logging
 
 logger = logging.getLogger(name=__name__)

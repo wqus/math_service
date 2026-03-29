@@ -1,7 +1,6 @@
 import datetime
 import logging
 
-import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
 

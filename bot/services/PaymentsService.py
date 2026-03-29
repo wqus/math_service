@@ -1,8 +1,8 @@
 # all functions from paymnets
 from sqlalchemy.exc import SQLAlchemyError
 
-from bot.core.ServiceResult import ServiceResult
-from bot.repositories.stars_transactions_repository import PaymentsRepository
+from core.ServiceResult import ServiceResult
+from repositories.stars_transactions_repository import PaymentsRepository
 
 
 class PaymentsService:

@@ -3,11 +3,11 @@ import logging
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from bot.core.ServiceResult import ServiceResult
-from bot.repositories.admins_repository import AdminRepository
-from bot.repositories.banned_users_repository import BannedRepository
-from bot.repositories.users_repository import UserRepository
-from bot.services.CaсheService import CacheService
+from core.ServiceResult import ServiceResult
+from repositories.admins_repository import AdminRepository
+from repositories.banned_users_repository import BannedRepository
+from repositories.users_repository import UserRepository
+from services.CaсheService import CacheService
 
 logger = logging.getLogger(__name__)
 

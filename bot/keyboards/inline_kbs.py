@@ -1,6 +1,5 @@
 from aiogram import types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-import logging
 
 # language buttons
 russian_lan_bt = types.InlineKeyboardButton(text='Русский🇷🇺', callback_data='language:RU')

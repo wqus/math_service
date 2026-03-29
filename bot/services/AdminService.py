@@ -1,8 +1,8 @@
 from sqlalchemy.exc import SQLAlchemyError
 
-from bot.core.ServiceResult import ServiceResult
-from bot.repositories.banned_users_repository import BannedRepository
-from bot.repositories.support_messages_repository import TicketRepository
+from core.ServiceResult import ServiceResult
+from repositories.banned_users_repository import BannedRepository
+from repositories.support_messages_repository import TicketRepository
 
 
 class AdminService:
