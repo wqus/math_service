@@ -19,7 +19,7 @@ from startup import shutdown, startup, init_bot, load_texts, init_log
 from aiohttp import web
 from middlewares.user_language import InjectLanguage
 from middlewares.IntentMW import IntentMiddleware
-from core.config import WEBHOOK_PATH, LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST
+from core.config import WEBHOOK_URL_FULL_PATH, LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST
 from core.config import MODE
 
 async def main():
@@ -74,7 +74,7 @@ async def main():
             await dp.start_polling(bot)
         else:
             logger.info("Регистрация SimpleRequestHandler")
-            SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
+            SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_URL_FULL_PATH)
 
             # Обертки для передачи dp startup в web app
             async def on_startup(app: Application):
