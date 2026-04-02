@@ -7,6 +7,9 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+# Создать папку для логов
+RUN mkdir -p /app/bot/logs
+
 # Копируем зависимости отдельно (для кеша)
 COPY requirements.txt .
 
