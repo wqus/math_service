@@ -30,4 +30,4 @@ jobs:
             export IMAGE_NAME=ghcr.io/${{ github.repository }}:${{ github.sha }}
             cd /opt/myapp
             docker-compose pull bot
-            docker-compose up -d bot
+            docker-compose up -d
