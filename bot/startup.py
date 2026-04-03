@@ -8,6 +8,9 @@ from aiogram.fsm.storage.redis import RedisStorage
 import logging
 from core.config import WEBHOOK_URL_FULL_PATH
 import matplotlib
+
+matplotlib.use('Agg')
+
 from core.config import TOKEN, MODE
 from aiogram import Bot, Dispatcher
 from handlers.admin import router as admin_router
@@ -93,9 +96,12 @@ async def init_redis():
             health_check_interval=30,
             socket_timeout=4
         )
+        # ДОБАВЛЕНО: проверка соединения
+        await redis_client.ping()
+        logger.info("Redis клиент успешно подключен")
         return redis_client
     except Exception:
-        logger.error("Ошибка создания Redis клиента")
+        logger.error("Ошибка создания Redis клиента", exc_info=True)
         raise
 
 
@@ -107,27 +113,53 @@ async def close_redis(redis_client, dispatcher: Dispatcher):
         if redis_client:
             logger.info("Закрытие Redis клиента")
             await redis_client.close()
+            logger.info("Redis клиент закрыт")
     except Exception:
-        logger.error("Ошибка при закрытии Redis клиента")
+        logger.error("Ошибка при закрытии Redis клиента", exc_info=True)
 
 
 async def startup(bot: Bot):
     """
     Выполняет настройку при старте бота.
     """
-    matplotlib.use('Agg')
+    # ДОБАВЛЕНО: логи входа в функцию
+    logger.info("=" * 60)
+    logger.info("ВЫЗВАНА ФУНКЦИЯ startup")
+    logger.info(f"MODE = {MODE}")
+    logger.info(f"WEBHOOK_URL_FULL_PATH = {WEBHOOK_URL_FULL_PATH}")
+    logger.info("=" * 60)
+
     if MODE != 'dev':
-        await bot.set_webhook(url=WEBHOOK_URL_FULL_PATH)
+        logger.info("Пытаюсь установить вебхук...")
+        try:
+            await bot.set_webhook(url=WEBHOOK_URL_FULL_PATH)
+            logger.info(f"Вебхук успешно установлен на {WEBHOOK_URL_FULL_PATH}")
+
+            # ДОБАВЛЕНО: проверка что вебхук реально установлен
+            webhook_info = await bot.get_webhook_info()
+            logger.info(f"Проверка: текущий вебхук = {webhook_info.url}")
+        except Exception as e:
+            logger.error(f"ОШИБКА при установке вебхука: {e}", exc_info=True)
+            raise
+    else:
+        logger.info("DEV режим, пропускаем установку вебхука")
 
 
 async def shutdown(bot: Bot, dp, redis_client):
     """
     Выполняет завершение работы бота.
     """
+    # ДОБАВЛЕНО: логи входа в функцию
+    logger.info("=" * 60)
+    logger.info("ВЫЗВАНА ФУНКЦИЯ shutdown")
+    logger.info("=" * 60)
+
     await close_redis(redis_client=redis_client, dispatcher=dp)
     await bot.session.close()
     if MODE != 'dev':
+        logger.info("Удаляем вебхук...")
         await bot.delete_webhook()
+        logger.info("Вебхук удален")
 
 
 async def load_texts():
@@ -146,7 +178,8 @@ async def load_texts():
             en_content = await en_file.read()
             texts_en = json.loads(en_content)
 
+        logger.info("Текстовые ресурсы успешно загружены")
         return {'language:RU': texts_ru, 'language:EN': texts_en}
     except FileNotFoundError:
-        logger.error("Ошибка загрузки текстовых ресурсов")
+        logger.error("Ошибка загрузки текстовых ресурсов", exc_info=True)
         raise
