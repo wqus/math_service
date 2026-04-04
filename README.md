@@ -1,4 +1,6 @@
-<img width="410" height="358" alt="image" src="https://github.com/user-attachments/assets/c68619bc-21b7-445d-81b9-d9cfd12ba420" /># 📐 Math Helper Bot
+<img width="399" height="351" alt="image" src="https://github.com/user-attachments/assets/d7f9d1d3-ce58-4b5d-a2d9-0aa533a9a032" />
+
+# 📐 Math Helper Bot
 
 [![Python Version](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram%20Bot%20API-7.0-blue)](https://core.telegram.org/bots/api)
