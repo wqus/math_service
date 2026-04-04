@@ -1,4 +1,4 @@
-<img width="399" height="351" alt="image" src="https://github.com/user-attachments/assets/d7f9d1d3-ce58-4b5d-a2d9-0aa533a9a032" />
+![IMG_20260404_211659_358](https://github.com/user-attachments/assets/eabf9a2f-f840-4b05-93fc-2810313ad6ae)
 
 # 📐 Math Helper Bot
 
