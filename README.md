@@ -1,6 +1,6 @@
 ![IMG_20260404_211659_358](https://github.com/user-attachments/assets/eabf9a2f-f840-4b05-93fc-2810313ad6ae)
 
-# 📐 Math Helper Bot
+# Math Helper
 
 [![Python Version](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram%20Bot%20API-7.0-blue)](https://core.telegram.org/bots/api)
