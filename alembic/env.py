@@ -10,10 +10,10 @@ from sqlalchemy.pool import NullPool
 config = context.config
 fileConfig(config.config_file_name)
 
-POSTGRES_USER = os.getenv("POSTGRES_USER", "bot")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "botpass")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "bot_db")
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
 
 DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}/{POSTGRES_DB}"
 
