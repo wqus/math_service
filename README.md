@@ -60,6 +60,7 @@
 <img width="416" height="89" alt="image" src="https://github.com/user-attachments/assets/f997093e-08d2-4c8a-9cdf-7b74dd207420" />
 <img width="411" height="177" alt="image" src="https://github.com/user-attachments/assets/97c56578-1a47-47d3-a23d-53a35766ec81"/>
 
+
 > Пример взаимодействия:
 
 **Пользователь:** `5+3`  
