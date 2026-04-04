@@ -31,6 +31,4 @@ jobs:
             cd /opt/myapp
             docker-compose pull bot
             docker-compose up -d
-      - name: Apply database migrations
-        run: |
-          docker-compose exec -T bot alembic upgrade head
+            docker-compose exec -T bot alembic upgrade head
