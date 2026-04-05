@@ -9,7 +9,7 @@ from aiogram.types import CallbackQuery
 
 from services.AccessService import AccessService
 from services.AdminService import AdminService
-from utils.telegram_helpers import send_bans
+from utils.telegram_helpers import send_bans, send_tickets
 
 from states.SupportStates import SupportStates
 
@@ -27,7 +27,7 @@ async def handle_tickets_command(message: types.Message, user_language: str, tex
     fetch_tickets_result = await admin_service.fetch_tickets()
 
     if fetch_tickets_result.success:
-        await send_bans(message, fetch_tickets_result, user_language, texts)
+        await send_tickets(message, fetch_tickets_result, user_language, texts)
         has_more_kb = load_three_bans_kb(fetch_tickets_result.data['last_ticket_id'], "✅") if fetch_tickets_result.data[
             'has_more'] else None
         await message.answer(text=texts[user_language][fetch_tickets_result.message_key], reply_markup=has_more_kb)
