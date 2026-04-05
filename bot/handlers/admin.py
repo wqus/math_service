@@ -20,11 +20,11 @@ router.callback_query.filter(AccessRightsFilter(min_level=2))
 
 @router.message(Command("tickets"))
 async def handle_tickets_command(message: types.Message, user_language: str, texts: dict,
-                                 ticket_service: AdminService):
+                                 admin_service: AdminService):
     """
     Обрабатывает команду /tickets для вывода списка тикетов.
     """
-    fetch_tickets_result = await ticket_service.fetch_tickets()
+    fetch_tickets_result = await admin_service.fetch_tickets()
 
     if fetch_tickets_result.success:
         await send_bans(message, fetch_tickets_result, user_language, texts)
@@ -37,7 +37,7 @@ async def handle_tickets_command(message: types.Message, user_language: str, tex
 
 @router.message(SupportStates.waiting_for_answer)
 async def process_ticket_answer(message: types.Message, state: FSMContext, user_language: str, texts: dict,
-                                bot: Bot, ticket_service: AdminService):
+                                bot: Bot, admin_service: AdminService):
     """
     Обрабатывает ответ администратора на тикет.
     """
@@ -47,7 +47,7 @@ async def process_ticket_answer(message: types.Message, state: FSMContext, user_
         ticket_id = int(data.get('ticket_id'))
         ticket_user_id = data.get('ticket_user_id')
 
-        result = await ticket_service.save_support_answer(ticket_id, message.text, message.from_user.id)
+        result = await admin_service.save_support_answer(ticket_id, message.text, message.from_user.id)
         if result.success:
             rating_kb = await rate_support_answer_kb(ticket_id)
             await bot.send_message(chat_id=ticket_user_id, text=message.text,
@@ -68,7 +68,7 @@ async def process_ticket_answer(message: types.Message, state: FSMContext, user_
 
 @router.callback_query(F.data.startswith("admin"))
 async def handle_ticket_admin_callback(callback: CallbackQuery, state: FSMContext, user_language: str, texts: dict,
-                                       ticket_service: AdminService):
+                                       admin_service: AdminService):
     """
     Обрабатывает callback-запросы для тикетов (ответ и загрузка).
     """
@@ -84,7 +84,7 @@ async def handle_ticket_admin_callback(callback: CallbackQuery, state: FSMContex
             await state.set_state(SupportStates.waiting_for_answer)
         case 'load':
             current_position = int(split_data[2])
-            fetch_tickets_result = await ticket_service.fetch_tickets(current_position=current_position)
+            fetch_tickets_result = await admin_service.fetch_tickets(current_position=current_position)
 
             if fetch_tickets_result.success:
                 await send_bans(callback.message, fetch_tickets_result, user_language, texts)
