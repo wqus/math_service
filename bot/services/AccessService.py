@@ -35,7 +35,7 @@ class AccessService:
 
             # идём в БД
             premium_until, role = await self.users_repo.fetch_user_access(user_id)
-
+            premium_until = str(premium_until)
             await self.cache.set_access_data(user_id, role, premium_until)
 
             return role
