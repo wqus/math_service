@@ -89,10 +89,10 @@ class AccessService:
             await self.ban_repo.ban_user(user_id, admin_id, reason)
             await self.invalidate_access_cache(user_id)
 
-            return ServiceResult(success=True, message_key="user_banned")
+            return ServiceResult(success=True, message_key="user_was_banned_successful")
 
         except SQLAlchemyError:
-            return ServiceResult(success=False, message_key="ban_failed")
+            return ServiceResult(success=False, message_key="user_was_banned_unsuccessful")
 
     async def unban_user(self, user_id: int) -> ServiceResult:
         """
@@ -102,10 +102,10 @@ class AccessService:
             await self.ban_repo.unban_user(user_id)
             await self.invalidate_access_cache(user_id)
 
-            return ServiceResult(success=True, message_key="user_unbanned")
+            return ServiceResult(success=True, message_key="successful_unban")
 
         except SQLAlchemyError:
-            return ServiceResult(success=False, message_key="unban_failed")
+            return ServiceResult(success=False, message_key="unsuccessful_unban")
 
     async def assign_admin(self, user_id: int) -> ServiceResult:
         """
@@ -115,10 +115,10 @@ class AccessService:
             await self.admins_repo.add_admin(user_id)
             await self.invalidate_access_cache(user_id)
 
-            return ServiceResult(success=True, message_key="admin_assigned")
+            return ServiceResult(success=True, message_key="add_admin_successful")
 
         except SQLAlchemyError:
-            return ServiceResult(success=False, message_key="assign_admin_failed")
+            return ServiceResult(success=False, message_key="add_admin_unsuccessful")
 
     async def remove_admin(self, user_id: int) -> ServiceResult:
         """
@@ -128,7 +128,7 @@ class AccessService:
             await self.admins_repo.remove_admin(user_id)
             await self.invalidate_access_cache(user_id)
 
-            return ServiceResult(success=True, message_key="admin_removed")
+            return ServiceResult(success=True, message_key="remove_admin_successful")
 
         except SQLAlchemyError:
-            return ServiceResult(success=False, message_key="remove_admin_failed")
+            return ServiceResult(success=False, message_key="remove_admin_unsuccessful")

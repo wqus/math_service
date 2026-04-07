@@ -39,15 +39,15 @@ class AdminService:
                 success=True,
                 message_key='load_more',
                 data={'tickets': tickets,
-                                                                              'has_more': has_more,
-                                                                              'last_ticket_id': last_ticket_id})
+                      'has_more': has_more,
+                      'last_ticket_id': last_ticket_id})
         except SQLAlchemyError:
             return ServiceResult(
                 success=False,
                 message_key='support_no_tickets_to_load',
                 data={'tickets': [],
-                                                                                                'has_more': False,
-                                                                                                'last_ticket_id': None})
+                      'has_more': False,
+                      'last_ticket_id': None})
 
     async def save_support_answer(self, ticket_id: int, answer: str, admin_id: int) -> ServiceResult:
         """
