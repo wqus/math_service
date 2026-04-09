@@ -15,7 +15,7 @@ async def send_tickets(message: types.Message, result: ServiceResult, language: 
     else:
         ticket_messages = await format_tickets_list(result.data['tickets'], texts, language)
 
-        for ticket_msg in ticket_messages:
+        for ticket_msg in ticket_messages[:3]:
             await message.answer(text=ticket_msg[0], reply_markup=ticket_msg[1].as_markup(), parse_mode='html')
 
 

@@ -33,7 +33,7 @@ class TicketRepository:
         try:
             async with self.engine.begin() as conn:
                 result = await conn.execute(text("""
-                SELECT id, user_id, send_time, message, status FROM support_messages WHERE id > :current_position AND status = 'open' ORDER BY id LIMIT 4 
+                SELECT id, user_id, send_time, message, status FROM support_messages WHERE id >= :current_position AND status = 'open' ORDER BY id LIMIT 4 
                 """), {"current_position": current_position})
 
                 rows = result.mappings().fetchall()

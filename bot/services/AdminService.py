@@ -27,7 +27,7 @@ class AdminService:
                 message_key='support_message_failed'
             )
 
-    async def fetch_tickets(self, current_position: int = 0) -> ServiceResult:
+    async def fetch_tickets(self, current_position: int = 1) -> ServiceResult:
         """
         Загружает и отображает тикеты для поддержки.
         """
