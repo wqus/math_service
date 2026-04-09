@@ -49,8 +49,9 @@ async def process_ticket_answer(message: types.Message, state: FSMContext, user_
 
         result = await admin_service.save_support_answer(ticket_id, message.text, message.from_user.id)
         if result.success:
+            answer = texts[user_language]['support_answer'].format(ticket_id = ticket_id, answer = message.text)
             rating_kb = await rate_support_answer_kb(ticket_id)
-            await bot.send_message(chat_id=ticket_user_id, text=message.text,
+            await bot.send_message(chat_id=ticket_user_id, text=answer,
                                    reply_markup=rating_kb.as_markup(), parse_mode='HTML')
 
             await bot.edit_message_reply_markup(chat_id=message.chat.id, message_id=ticket_message_id,
