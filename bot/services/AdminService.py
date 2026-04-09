@@ -37,14 +37,14 @@ class AdminService:
             last_ticket_id = tickets[-1]['id'] if tickets else None
             return ServiceResult(
                 success=True,
-                message_key='load_more',
+                message_key='load_more' if has_more else 'support_no_tickets_to_load',
                 data={'tickets': tickets,
                       'has_more': has_more,
                       'last_ticket_id': last_ticket_id})
         except SQLAlchemyError:
             return ServiceResult(
                 success=False,
-                message_key='support_no_tickets_to_load',
+                message_key='fetch_tickets_error',
                 data={'tickets': [],
                       'has_more': False,
                       'last_ticket_id': None})
@@ -75,7 +75,7 @@ class AdminService:
 
             return ServiceResult(
                 success=True,
-                message_key='load_more',
+                message_key='load_more' if has_more else 'no_bans_to_load',
                 data={
                     'bans': bans,
                     'has_more': has_more,
