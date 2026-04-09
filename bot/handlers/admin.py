@@ -88,8 +88,8 @@ async def handle_ticket_admin_callback(callback: CallbackQuery, state: FSMContex
             fetch_tickets_result = await admin_service.fetch_tickets(current_position=current_position)
 
             if fetch_tickets_result.success:
-                await send_bans(callback.message, fetch_tickets_result, user_language, texts)
-                has_more_kb = load_three_bans_kb(fetch_tickets_result.data['last_ticket_id'], "✅") if \
+                await send_tickets(callback.message, fetch_tickets_result, user_language, texts)
+                has_more_kb = load_three_tickets_kb(fetch_tickets_result.data['last_ticket_id'], "✅") if \
                 fetch_tickets_result.data[
                     'has_more'] else None
                 await callback.message.answer(text=texts[user_language][fetch_tickets_result.message_key],
