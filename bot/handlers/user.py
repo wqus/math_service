@@ -10,8 +10,10 @@ from bot.keyboards.reply_kbs import kb_info
 from bot.presenters.history_presenter import format_history_list
 from bot.services.AccessService import AccessService
 from bot.services.HistoryService import HistoryService
+from bot.services.AIService import AIService
 from bot.utils.utils import *
 from bot.states.PlotStates import PlotStates
+from keyboards.inline_kbs import ai_functions_kb
 
 router = Router()
 
@@ -63,8 +65,9 @@ async def solve_equation(message: types.Message, user_language: str, texts: dict
             formatted_solutions = ('; '.join(
                 [f'x = {str(round(sol, 3)).rstrip("0").rstrip(".") if "." in str(sol) else str(sol)}' for sol in
                  solutions]))
-
-            await message.answer(text=formatted_solutions)
+            keyboard = await ai_functions_kb(user_input, texts[user_language]['show_solution'],
+                                             texts[user_language]['generate_similar'])
+            await message.answer(text=formatted_solutions, reply_markup=keyboard.as_markup())
             await history_service.save_message(message.from_user.id, user_input, formatted_solutions)
         else:
             await message.answer(text=texts[user_language]['wrong_input'])
@@ -86,7 +89,9 @@ async def solve_inequality(message: types.Message, user_language: str, texts: di
         solution = sp.solve_univariate_inequality(safe_parse_to_numpy_answer(user_input), x, relational=False)
 
         formatted_solution = f'x ∈ {sp.pretty(solution, use_unicode=True)}'
-        await message.answer(text=formatted_solution)
+        keyboard = await ai_functions_kb(user_input, texts[user_language]['show_solution'],
+                                         texts[user_language]['generate_similar'])
+        await message.answer(text=formatted_solution, reply_markup=keyboard.as_markup())
         await history_service.save_message(message.from_user.id, user_input, formatted_solution)
 
     except Exception as e:
@@ -95,12 +100,12 @@ async def solve_inequality(message: types.Message, user_language: str, texts: di
 
 @router.message(PlotStates.waiting_for_function)
 async def generate_and_send_plot(
-    message: types.Message,
-    state: FSMContext,
-    user_language: str,
-    texts: dict,
-    access_service: AccessService,
-    history_service: HistoryService
+        message: types.Message,
+        state: FSMContext,
+        user_language: str,
+        texts: dict,
+        access_service: AccessService,
+        history_service: HistoryService
 ):
     """
     Генерирует и отправляет график функции.
@@ -146,6 +151,20 @@ async def generate_and_send_plot(
         await state.clear()
 
 
+@router.callback_query(AccessRightsFilter(0), F.data.startswith("ai:"))
+async def ai_functions(callback: CallbackQuery, aiservice: AIService, user_language: str = 'RU'):
+    parts = callback.data.split(":")
+    function = parts[1]
+    user_input = parts[2]
+
+    if function == 'show_solution':
+        show_solution_result = await aiservice.get_show_solution(user_input, user_language)
+        await callback.message.answer(text=show_solution_result)
+    elif function == 'generate_similar':
+        generate_similar_result = await aiservice.get_generate_similar(user_input, user_language)
+        await callback.message.answer(text=generate_similar_result)
+
+
 @router.callback_query(AccessRightsFilter(0), F.data.startswith("user:history:"))
 async def paginate_history(callback: CallbackQuery, texts: dict, history_service: HistoryService,
                            user_language: str = "RU"):
@@ -189,8 +208,9 @@ async def evaluate_expression(message: types.Message, user_language: str, texts:
 
         answer = safe_parse_to_numpy_answer(user_input)
         formatted_result = str(round(answer, 3)).rstrip('0').rstrip('.') if '.' in str(answer) else str(answer)
-
-        await message.answer(text=formatted_result)
+        keyboard = await ai_functions_kb(user_input, texts[user_language]['show_solution'],
+                                         texts[user_language]['generate_similar'])
+        await message.answer(text=formatted_result, reply_markup=keyboard.as_markup())
         await history_service.save_message(message.from_user.id, user_input, formatted_result)
     except Exception as e:
         await message.answer(text=f'{texts[user_language]["error"]}{e}')

@@ -78,3 +78,13 @@ async def unban_user_kb(user_id, unban_text):
     builder.button(text=unban_text, callback_data=f'unban:{user_id}')
 
     return builder
+
+# Клавиатура для AI функций
+async def ai_functions_kb(expression: str, show_solution: str, generate_similar: str):
+    builder = InlineKeyboardBuilder()
+    builder.button(text = show_solution, callback_data=f'ai:show_solution:{expression}')
+    builder.button(text = generate_similar, callback_data=f'ai:generate_similar:{expression}')
+
+    builder.adjust(1)
+    return builder
+
