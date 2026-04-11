@@ -21,7 +21,7 @@ from startup import shutdown, startup, init_bot, load_texts, init_log
 from aiohttp import web
 from middlewares.user_language import InjectLanguage
 from middlewares.IntentMW import IntentMiddleware
-from core.config import WEBHOOK_URL_FULL_PATH, LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST, WEBHOOK_PATH, LLM_URL
+from core.config import LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST, WEBHOOK_PATH, LLM_URL
 from core.config import MODE
 
 
@@ -63,7 +63,6 @@ async def main():
 
         # Инициализация
         llm_client = MathAIClient(api_url=LLM_URL)
-        dp['llm_client'] = llm_client
 
         # Инициализация репозиториев
         logger.info("ШАГ 3: Инициализация репозиториев...")
@@ -93,7 +92,7 @@ async def main():
         dp['history_service'] = history_service
         dp['payments_service'] = payments_service
         dp['user_service'] = user_service
-        dp['aiservice'] = ai_service
+        dp['ai_service'] = ai_service
         # Инициализация
         llm_client = MathAIClient(api_url=LLM_URL)
         dp['llm_client'] = llm_client
