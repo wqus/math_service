@@ -54,5 +54,9 @@
   "show_solution": "Show solution",
   "generate_similar": "Generate similar",
   "send_solution": "📐 Solution for expression `{expression}`\n\n{solution}",
-  "send_similar": "🎯 Similar expression to `{expression}`\n\n{similar}\n\n✏️ Try to solve it and check yourself!"
+  "send_similar": "🎯 Similar expression to `{expression}`\n\n{similar}\n\n✏️ Try to solve it and check yourself!",
+  "no_solution": "❌ Failed to find solution for `{expression}`\n\nThe expression might be invalid or unsolvable.",
+  "no_similar": "❌ Failed to generate similar expression for `{expression}`\n\nTry a different expression.",
+  "solution_error": "⚠️ Error getting solution for `{expression}`\n\nTry again later or check input format.",
+  "generation_error": "⚠️ Error generating similar expression for `{expression}`\n\nTry again later."
 }

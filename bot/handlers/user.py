@@ -150,7 +150,7 @@ async def generate_and_send_plot(
 @router.callback_query(AccessRightsFilter(0), F.data.startswith("ai:"))
 async def ai_functions(callback: CallbackQuery, ai_service: AIService, texts: dict = 'RU', user_language: str = 'RU'):
     """
-    Обрабатывает callback-запросы для AI функций (решение и генерация).
+    Обрабатывает запросы для AI функций (решение и генерация).
     """
     split_data = callback.data.split(":")
     function_type = split_data[1]
@@ -158,11 +158,35 @@ async def ai_functions(callback: CallbackQuery, ai_service: AIService, texts: di
 
     if function_type == 'show_solution':
         solution_result = await ai_service.get_show_solution(user_input, user_language)
-        answer = texts[user_language]['send_similar'].format(expression = user_input, similar = solution_result.data['response'])
+
+        if solution_result.success and solution_result.data and solution_result.data.get('response'):
+            solution_text = solution_result.data['response'].strip()
+            if solution_text:
+                answer = texts[user_language]['send_solution'].format(
+                    expression=user_input,
+                    solution=solution_text)
+            else:
+                answer = texts[user_language]['no_solution'].format(expression=user_input)
+        else:
+            answer = texts[user_language]['solution_error'].format(expression=user_input)
+
         await callback.message.answer(text=answer)
+
     elif function_type == 'generate_similar':
         similar_result = await ai_service.get_generate_similar(user_input, user_language)
-        answer = texts[user_language]['send_similar'].format(expression = user_input, similar = similar_result.data['response'])
+
+        if similar_result.success and similar_result.data and similar_result.data.get('response'):
+            similar_text = similar_result.data['response'].strip()
+            if similar_text:
+                answer = texts[user_language]['send_similar'].format(
+                    expression=user_input,
+                    similar=similar_text
+                )
+            else:
+                answer = texts[user_language]['no_similar'].format(expression=user_input)
+        else:
+            answer = texts[user_language]['generation_error'].format(expression=user_input)
+
         await callback.message.answer(text=answer)
 
 @router.callback_query(AccessRightsFilter(0), F.data.startswith("user:history:"))

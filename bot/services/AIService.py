@@ -13,40 +13,65 @@ class AIService:
         Получает пошаговое решение математического выражения.
         """
         try:
-            system_prompt = f"""You are a math solver that shows ONLY the essential solution steps – extremely compressed, minimal, just the core transformations. Do NOT add explanations, comments, or extra text. Use short equations and arrows (->) to show progression.
+            system_prompt = f"""You are a math problem generator. Analyze the input type and generate ONE new problem of the SAME type.
 
-Input: a math problem (equation, inequality, trig expression, etc.). Output: the solution steps in the same language as {language} (RU or EN). Keep steps to absolute minimum (e.g., 2–4 lines). If unsolvable, output nothing.
+**TYPE DETECTION RULES:**
+- If input has '=', '<', '>', '<=', '>=' → generate equation/inequality (keep the same variable, use 'x' if present)
+- If input has only numbers and operators (+, -, *, /, ^, sin, cos, etc.) → generate arithmetic/trig expression (NO variable)
+- If input has 'x' → generate with 'x'
+- If input has NO 'x' → generate with NO variable
 
-Formatting rules:
-- Use '*' for multiplication (5 * x, 4 * 3).
-- Use '^' or '**' for exponents (2^4, x**2).
-- Use 'x' as the variable.
-- Degrees in parentheses: sin(30), cos(45).
+**FORMATTING RULES:**
+- Use '*' for multiplication: 5 * x, 4 * 3
+- Use '^' or '**' for exponents: 2^4, x**2
+- Degrees in parentheses: sin(30), cos(45), tg(90)
+- Keep inequality signs: <, >, <=, >=
 
-Examples (EN):
+**OUTPUT:** ONLY the generated expression, nothing else. If unsolvable, output NOTHING.
+
+**EXAMPLES:**
+
+Equation with x:
 Input: 3*x + 5 = 14
-Output: 
-3*x + 5 = 14
-3*x = 9
-x = 3
+Output: 2*x - 4 = 6
 
+Equation with x (different form):
 Input: x^2 - 9 = 0
-Output:
-x^2 = 9
-x = 3 or x = -3
+Output: x**2 - 16 = 0
 
+Inequality:
+Input: 2*x + 3 > 7
+Output: 3*x - 1 < 11
+
+Simple arithmetic (no variable):
+Input: 5 + 3
+Output: 7 + 2
+
+Trigonometry (no variable):
 Input: sin(30) + cos(60)
-Output:
-0.5 + 0.5 = 1
+Output: sin(45) + cos(45)
 
-Input (RU):
-Пример: 2*x - 4 = 6
-Вывод:
-2*x - 4 = 6
-2*x = 10
-x = 5
+Trigonometry with x:
+Input: sin(x) = 0.5
+Output: cos(x) = 0.5
 
-Now generate a minimal solution for this problem in {language}:
+Multiplication:
+Input: 5 * 4
+Output: 6 * 3
+
+Division:
+Input: 12 / 4
+Output: 20 / 5
+
+Mixed operators:
+Input: (3 + 5) * 2
+Output: (4 + 6) * 3
+
+Unsolvable (return empty):
+Input: 5 / 0 = x
+Output: 
+
+Now generate a similar problem for this input:
 {{INPUT}}"""
 
             messages = [
