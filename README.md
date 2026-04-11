@@ -10,7 +10,7 @@ https://github.com/user-attachments/assets/6bc34551-1dc5-44e9-a136-75b8bf8805fb
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 **Telegram-бот для решения математических задач**  
-Поддерживает примеры, уравнения, неравенства, построение графиков и пошаговые пояснения.
+Поддерживает примеры, уравнения, неравенства, построение графиков, freemium модель, оплата с помощью Telegram Stars, RBAC.
 
 ---
 
@@ -55,11 +55,13 @@ https://github.com/user-attachments/assets/6bc34551-1dc5-44e9-a136-75b8bf8805fb
 ---
 
 ## Демонстрация
-
-<img width="410" height="358" alt="image" src="https://github.com/user-attachments/assets/e18362c0-aefc-4e2c-b57f-d181b07c1579"/>
-<img width="414" height="246" alt="image" src="https://github.com/user-attachments/assets/85eef766-fbae-4213-9c7e-9e3b6d64c56c"/>
-<img width="416" height="89" alt="image" src="https://github.com/user-attachments/assets/f997093e-08d2-4c8a-9cdf-7b74dd207420" />
-<img width="411" height="177" alt="image" src="https://github.com/user-attachments/assets/97c56578-1a47-47d3-a23d-53a35766ec81"/>
+<img width="371" height="587" alt="Screenshot_1" src="https://github.com/user-attachments/assets/50e6e28c-e147-4001-af0d-2bc749a0747f" />
+<img width="374" height="871" alt="Screenshot_2" src="https://github.com/user-attachments/assets/069fc1ee-ecc4-4106-ac87-2993d73d10fa" />
+<img width="372" height="826" alt="Screenshot_3" src="https://github.com/user-attachments/assets/75df662a-374f-4b6d-aa0b-71b63ddbc08f" />
+<img width="369" height="680" alt="Screenshot_4" src="https://github.com/user-attachments/assets/b8d3f353-aa6b-429c-8144-53b0c3815ead" />
+<img width="380" height="694" alt="Screenshot_5" src="https://github.com/user-attachments/assets/e0fccdfe-e154-4493-9e85-45605c3f6e7a" />
+<img width="372" height="153" alt="Screenshot_6" src="https://github.com/user-attachments/assets/32e73fd3-84ed-4068-b1c9-c70dc0f772a9" />
+<img width="373" height="363" alt="Screenshot_7" src="https://github.com/user-attachments/assets/882b67dd-511a-429c-b312-544854fcc6f7" />
 
 
 ## Быстрый старт для пользователя
@@ -118,6 +120,8 @@ x^2 - 4 > 0	(-∞, -2) ∪ (2, ∞)
 История📖	Список последних запросов с ответами
 Примечание📃	Правила записи (умножение *, степень ** или ^, градусы в скобках)
 Премиум🧠	Меню выбора подписки за Telegram Stars
+
+
 ⚙️ Конфигурация
 Файл .env содержит следующие переменные:
 
@@ -177,8 +181,6 @@ Alembic – миграции
 Redis – кеширование, FSM storage, rate limiting
 
 SymPy / NumPy / Matplotlib – математика и графика
-
-AWS S3 (boto3) – хранение изображений графиков
 
 Docker – контейнеризация
 
