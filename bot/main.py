@@ -3,12 +3,14 @@ from database.engine import engine
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp.web_app import Application
 
+from infrastucture.llm_client import MathAIClient
 from repositories.admins_repository import AdminRepository
 from repositories.banned_users_repository import BannedRepository
 from repositories.history_repository import HistoryRepository
 from repositories.stars_transactions_repository import PaymentsRepository
 from repositories.support_messages_repository import TicketRepository
 from repositories.users_repository import UserRepository
+from services.AIService import AIService
 from services.AccessService import AccessService
 from services.AdminService import AdminService
 from services.CaсheService import CacheService
@@ -19,7 +21,7 @@ from startup import shutdown, startup, init_bot, load_texts, init_log
 from aiohttp import web
 from middlewares.user_language import InjectLanguage
 from middlewares.IntentMW import IntentMiddleware
-from core.config import WEBHOOK_URL_FULL_PATH, LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST, WEBHOOK_PATH
+from core.config import WEBHOOK_URL_FULL_PATH, LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST, WEBHOOK_PATH, LLM_URL
 from core.config import MODE
 
 
@@ -59,6 +61,10 @@ async def main():
         dp['texts'] = await load_texts()
         logger.info("Тексты загружены")
 
+        # Инициализация
+        llm_client = MathAIClient(api_url=LLM_URL)
+        dp['llm_client'] = llm_client
+
         # Инициализация репозиториев
         logger.info("ШАГ 3: Инициализация репозиториев...")
         admins_repo = AdminRepository(engine=engine)
@@ -77,7 +83,8 @@ async def main():
         admin_service = AdminService(ticket_repo=ticket_repo, ban_repo=ban_repo)
         history_service = HistoryService(repo=history_repo)
         payments_service = PaymentsService(repo=payments_repo)
-        user_service = UserService(users_repo)
+        user_service = UserService(repo=users_repo)
+        ai_service = AIService(llm_client= llm_client)
         logger.info("Сервисы инициализированы")
 
         # Регистрация сервисов в диспетчере
@@ -86,6 +93,11 @@ async def main():
         dp['history_service'] = history_service
         dp['payments_service'] = payments_service
         dp['user_service'] = user_service
+        dp['aiservice'] = ai_service
+        # Инициализация
+        llm_client = MathAIClient(api_url=LLM_URL)
+        dp['llm_client'] = llm_client
+
 
         logger.info("ШАГ 5: Регистрация startup/shutdown...")
         dp.startup.register(startup)

@@ -116,7 +116,6 @@ async def generate_and_send_plot(
         plot_buf = generate_plot(f_numpy, original_text, user_language)
 
         raw_bytes = plot_buf.read()
-        print(f"Размер фото: {len(raw_bytes)} байт")
 
         x_range = (-10, 10)
         caption_template = texts[user_language]['plot_caption']
@@ -144,15 +143,12 @@ async def generate_and_send_plot(
             await message.answer(texts[user_language]['attempts_ended'], parse_mode='HTML')
 
     except Exception as e:
-        print(f"Ошибка при отправке графика: {e}")
-        import traceback
-        traceback.print_exc()
         await message.answer(texts[user_language]["plot_try_again"])
         await state.clear()
 
 
 @router.callback_query(AccessRightsFilter(0), F.data.startswith("ai:"))
-async def ai_functions(callback: CallbackQuery, aiservice: AIService, user_language: str = 'RU'):
+async def ai_functions(callback: CallbackQuery, ai_service: AIService, user_language: str = 'RU'):
     """
     Обрабатывает callback-запросы для AI функций (решение и генерация).
     """
@@ -161,10 +157,10 @@ async def ai_functions(callback: CallbackQuery, aiservice: AIService, user_langu
     user_input = split_data[2]
 
     if function_type == 'show_solution':
-        solution_result = await aiservice.get_show_solution(user_input, user_language)
+        solution_result = await ai_service.get_show_solution(user_input, user_language)
         await callback.message.answer(text=solution_result)
     elif function_type == 'generate_similar':
-        similar_result = await aiservice.get_generate_similar(user_input, user_language)
+        similar_result = await ai_service.get_generate_similar(user_input, user_language)
         await callback.message.answer(text=similar_result)
 
 @router.callback_query(AccessRightsFilter(0), F.data.startswith("user:history:"))
