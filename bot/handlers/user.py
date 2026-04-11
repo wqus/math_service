@@ -148,7 +148,7 @@ async def generate_and_send_plot(
 
 
 @router.callback_query(AccessRightsFilter(0), F.data.startswith("ai:"))
-async def ai_functions(callback: CallbackQuery, ai_service: AIService, user_language: str = 'RU'):
+async def ai_functions(callback: CallbackQuery, ai_service: AIService, texts: dict = 'RU', user_language: str = 'RU'):
     """
     Обрабатывает callback-запросы для AI функций (решение и генерация).
     """
@@ -158,10 +158,12 @@ async def ai_functions(callback: CallbackQuery, ai_service: AIService, user_lang
 
     if function_type == 'show_solution':
         solution_result = await ai_service.get_show_solution(user_input, user_language)
-        await callback.message.answer(text=solution_result)
+        answer = texts[user_language]['send_similar'].format(expression = user_input, similar = solution_result.data['response'])
+        await callback.message.answer(text=answer)
     elif function_type == 'generate_similar':
         similar_result = await ai_service.get_generate_similar(user_input, user_language)
-        await callback.message.answer(text=similar_result)
+        answer = texts[user_language]['send_similar'].format(expression = user_input, similar = similar_result.data['response'])
+        await callback.message.answer(text=answer)
 
 @router.callback_query(AccessRightsFilter(0), F.data.startswith("user:history:"))
 async def paginate_history(callback: CallbackQuery, texts: dict, history_service: HistoryService,

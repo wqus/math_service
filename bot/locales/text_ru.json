@@ -51,5 +51,9 @@
   "add_admin_unsuccessful": "Возникла ошибка при попытке выдать роль администратора пользователю! (user_id: {user_id})",
   "right_remove_admin_usage": "Использование /remove_admin user_id",
   "remove_admin_successful": "Роль администратора успешно изъята (user_id: {user_id})!",
-  "remove_admin_unsuccessful": "Возникла ошибка при попытке изъять роль администратора (user_id: {user_id})"
+  "remove_admin_unsuccessful": "Возникла ошибка при попытке изъять роль администратора (user_id: {user_id})",
+  "show_solution": "Показать решение",
+  "generate_similar": "Сгенерировать похожее",
+  "send_solution": "📐 Решение выражения `{expression}`\n\n{solution}",
+  "send_similar": "🎯 Похожее выражение на `{expression}`\n\n{similar}\n\n✏️Попробуй решить и проверь себя!"
 }

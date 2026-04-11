@@ -33,13 +33,11 @@ async def main():
     logger = init_log()
 
     # ДОБАВЛЕНО: лог запуска main
-    logger.info("=" * 60)
     logger.info("ЗАПУСК main()")
     logger.info(f"MODE = {MODE}")
     logger.info(f"WEBHOOK_PATH = {WEBHOOK_PATH}")
     logger.info(f"LOCAL_WEBHOOK_HOST = {LOCAL_WEBHOOK_HOST}")
     logger.info(f"LOCAL_WEBHOOK_PORT = {LOCAL_WEBHOOK_PORT}")
-    logger.info("=" * 60)
 
     try:
         # Инициализация бота, диспетчера и Redis клиента

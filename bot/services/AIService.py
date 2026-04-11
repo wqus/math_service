@@ -8,12 +8,46 @@ class AIService:
     def __init__(self, llm_client: MathAIClient):
         self.llm_client = llm_client
 
-    async def get_show_solution(self, expression: str, language: str = "ru"):
+    async def get_show_solution(self, expression: str, language: str = "ru") -> ServiceResult:
         """
         Получает пошаговое решение математического выражения.
         """
         try:
-            system_prompt = f"Ты математический помощник. Реши задачу на языке {language} и покажи решение пошагово."
+            system_prompt = f"""You are a math solver that shows ONLY the essential solution steps – extremely compressed, minimal, just the core transformations. Do NOT add explanations, comments, or extra text. Use short equations and arrows (->) to show progression.
+
+Input: a math problem (equation, inequality, trig expression, etc.). Output: the solution steps in the same language as {language} (RU or EN). Keep steps to absolute minimum (e.g., 2–4 lines). If unsolvable, output nothing.
+
+Formatting rules:
+- Use '*' for multiplication (5 * x, 4 * 3).
+- Use '^' or '**' for exponents (2^4, x**2).
+- Use 'x' as the variable.
+- Degrees in parentheses: sin(30), cos(45).
+
+Examples (EN):
+Input: 3*x + 5 = 14
+Output: 
+3*x + 5 = 14
+3*x = 9
+x = 3
+
+Input: x^2 - 9 = 0
+Output:
+x^2 = 9
+x = 3 or x = -3
+
+Input: sin(30) + cos(60)
+Output:
+0.5 + 0.5 = 1
+
+Input (RU):
+Пример: 2*x - 4 = 6
+Вывод:
+2*x - 4 = 6
+2*x = 10
+x = 5
+
+Now generate a minimal solution for this problem in {language}:
+{{INPUT}}"""
 
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -25,7 +59,7 @@ class AIService:
         except Exception:
             return ServiceResult(success=False, message_key='llm_error')
 
-    async def get_generate_similar(self, expression: str, language: str):
+    async def get_generate_similar(self, expression: str, language: str)-> ServiceResult:
         """
         Генерирует похожие математические выражения и их решения.
         """

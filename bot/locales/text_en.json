@@ -50,5 +50,9 @@
   "add_admin_unsuccessful": "An error occurred while trying to assign the administrator role to the user! (user_id: {user_id})",
   "right_remove_admin_usage": "Usage /remove_admin user_id",
   "remove_admin_successful": "The administrator role has been successfully removed (user_id: {user_id})!",
-  "remove_admin_unsuccessful": "An error occurred while trying to remove the administrator role (user_id: {user_id})"
+  "remove_admin_unsuccessful": "An error occurred while trying to remove the administrator role (user_id: {user_id})",
+  "show_solution": "Show solution",
+  "generate_similar": "Generate similar",
+  "send_solution": "📐 Solution for expression `{expression}`\n\n{solution}",
+  "send_similar": "🎯 Similar expression to `{expression}`\n\n{similar}\n\n✏️ Try to solve it and check yourself!"
 }
