@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class MathAIClient:
     def __init__(self, api_url: str, timeout: int = 30):
-        self.api_url = api_url + "/chat/completions"
+        self.api_url = api_url + "/api/chat"
         self.timeout = httpx.Timeout(timeout)
         self.client = httpx.AsyncClient(timeout=self.timeout, limits=httpx.Limits(max_connections=100))
         self.headers = {

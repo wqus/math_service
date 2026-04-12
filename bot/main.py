@@ -32,13 +32,6 @@ async def main():
     """
     logger = init_log()
 
-    # ДОБАВЛЕНО: лог запуска main
-    logger.info("ЗАПУСК main()")
-    logger.info(f"MODE = {MODE}")
-    logger.info(f"WEBHOOK_PATH = {WEBHOOK_PATH}")
-    logger.info(f"LOCAL_WEBHOOK_HOST = {LOCAL_WEBHOOK_HOST}")
-    logger.info(f"LOCAL_WEBHOOK_PORT = {LOCAL_WEBHOOK_PORT}")
-
     try:
         # Инициализация бота, диспетчера и Redis клиента
         logger.info("ШАГ 1: Инициализация бота...")
@@ -132,6 +125,7 @@ async def main():
                 await dp.emit_shutdown(bot)
                 logger.info("dp.emit_shutdown() выполнен")
                 logger.info("=" * 60)
+                await llm_client.close()
 
             app.on_startup(on_startup)
             app.on_shutdown(on_shutdown)
