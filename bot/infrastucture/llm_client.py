@@ -14,13 +14,23 @@ class MathAIClient:
             "Accept": "application/json"
         }
 
-    async def chat_completion(self, messages: list, model: str = "qwen-2.5:3b", temperature: float = 0.25) -> str:
+    async def chat_completion(self, messages: list, model: str = "qwen-2.5:3b", temperature: float = 0.) -> str:
         payload = {
             "model": model,
             "messages": messages,
             "temperature": temperature,
         }
-
+        try:
+            response = await self.client.post(self.api_url, json=payload, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            return data['choices'][0]['message']['content']
+        except httpx.HTTPStatusError as e:
+            logger.error(f"LLM HTTP error {e.response.status_code}: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"LLM ошибка при запросе: {e}")
+            raise
 
     async def close(self):
         await self.client.aclose()
