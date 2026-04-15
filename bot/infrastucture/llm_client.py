@@ -3,7 +3,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class MathAIClient:
     def __init__(self, api_url: str, timeout: int = 30):
         self.api_url = api_url + "/api/chat"
@@ -17,7 +16,7 @@ class MathAIClient:
     async def chat_completion(self, messages: list, model: str = "qwen-2.5:3b", temperature: float = 0.) -> str:
         payload = {
             "model": model,
-            "prompt": messages,
+            "messages": messages,
             "temperature": temperature,
             "stream": False
         }
