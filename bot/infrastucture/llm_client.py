@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class MathAIClient:
     def __init__(self, api_url: str, timeout: int = 30):
-        self.api_url = api_url + "/api/generate"
+        self.api_url = api_url + "/api/chat"
         self.timeout = httpx.Timeout(timeout)
         self.client = httpx.AsyncClient(timeout=self.timeout, limits=httpx.Limits(max_connections=100))
         self.headers = {
@@ -17,14 +17,15 @@ class MathAIClient:
     async def chat_completion(self, messages: list, model: str = "qwen-2.5:3b", temperature: float = 0.) -> str:
         payload = {
             "model": model,
-            "messages": messages,
+            "prompt": messages,
             "temperature": temperature,
+            "stream": False
         }
         try:
             response = await self.client.post(self.api_url, json=payload, headers=self.headers)
             response.raise_for_status()
             data = response.json()
-            return data['choices'][0]['message']['content']
+            return data['message']['content']
         except httpx.HTTPStatusError as e:
             logger.error(f"LLM HTTP error {e.response.status_code}: {e}")
             raise
