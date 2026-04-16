@@ -14,7 +14,6 @@ class MathAIClient:
         }
 
     async def chat_completion(self, prompt: str, model: str = "qwen-2.5:3b", temperature: float = 0.) -> str:
-
         payload = {
             "model": model,
             "prompt": prompt,
@@ -22,7 +21,6 @@ class MathAIClient:
             "stream": False
         }
         try:
-            logger.info(f"SENDING TO LLM: {prompt[:200]}...")
             response = await self.client.post(self.api_url, json=payload, headers=self.headers)
             response.raise_for_status()
             data = response.json()
