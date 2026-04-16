@@ -29,6 +29,7 @@ class MathAIClient:
             "stream": False
         }
         try:
+            logger.info(f"SENDING TO LLM: {full_prompt[:200]}...")
             response = await self.client.post(self.api_url, json=payload, headers=self.headers)
             response.raise_for_status()
             data = response.json()
