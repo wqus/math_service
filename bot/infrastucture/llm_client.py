@@ -13,7 +13,7 @@ class MathAIClient:
             "Accept": "application/json"
         }
 
-    async def chat_completion(self, prompt: str, model: str = "qwen-2.5:3b", temperature: float = 0.) -> str:
+    async def chat_completion(self, prompt: str, model: str = "qwen2.5:3b", temperature: float = 0.) -> str:
         payload = {
             "model": model,
             "prompt": prompt,
