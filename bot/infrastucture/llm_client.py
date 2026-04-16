@@ -40,6 +40,5 @@ class MathAIClient:
             logger.error(f"LLM ошибка при запросе: {e}")
             raise
 
-    #Закрытие сессии
     async def close(self):
         await self.client.aclose()
