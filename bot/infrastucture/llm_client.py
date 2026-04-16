@@ -13,23 +13,16 @@ class MathAIClient:
             "Accept": "application/json"
         }
 
-    async def chat_completion(self, messages: list, model: str = "qwen-2.5:3b", temperature: float = 0.) -> str:
-        full_prompt = ""
-        for msg in messages:
-            role = msg["role"]
-            content = msg["content"]
-            if role == "system":
-                full_prompt += f"{content}\n\n"
-            elif role == "user":
-                full_prompt += f"Input: {content}\n\nOutput:"
+    async def chat_completion(self, prompt: str, model: str = "qwen-2.5:3b", temperature: float = 0.) -> str:
+
         payload = {
             "model": model,
-            "prompt": full_prompt,
+            "prompt": prompt,
             "temperature": temperature,
             "stream": False
         }
         try:
-            logger.info(f"SENDING TO LLM: {full_prompt[:200]}...")
+            logger.info(f"SENDING TO LLM: {prompt[:200]}...")
             response = await self.client.post(self.api_url, json=payload, headers=self.headers)
             response.raise_for_status()
             data = response.json()
