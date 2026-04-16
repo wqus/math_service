@@ -24,7 +24,7 @@ class MathAIClient:
                 full_prompt += f"Input: {content}\n\nOutput:"
         payload = {
             "model": model,
-            "messages": full_prompt,
+            "prompt": full_prompt,
             "temperature": temperature,
             "stream": False
         }
