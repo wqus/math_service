@@ -244,6 +244,3 @@ flake8 bot/
 Откройте Pull Request в ветку main
 
 Пожалуйста, ознакомьтесь с CONTRIBUTING.md и CODE_OF_CONDUCT.md (будут добавлены).
-
-📄 Лицензия
-Проект распространяется под лицензией MIT. Подробности в файле LICENSE.
