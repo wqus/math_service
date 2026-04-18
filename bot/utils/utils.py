@@ -58,7 +58,7 @@ def solve_equation(user_input: str, inequality_type: str):
 
 def parse_expression(expr: str, evaluate: bool = True):
     cleaned = clean_expression(expr)
-    cleaned = re.sub(r'(sin|cos|tan|cot)\((\d+)\)', replace_degrees, cleaned)
+    cleaned = re.sub(r'(sin|cos|tan|cot)\(-?\d+(\.\d+)?\)', replace_degrees, cleaned)
     # Парсинг выражения через SymPy
     try:
         parsed = parse_expr(cleaned, transformations=transformations, evaluate=evaluate)
