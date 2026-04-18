@@ -1,5 +1,5 @@
-from intents.Intent import Intent
-from intents.intent_keywords import intent_keywords
+from bot.intents.Intent import Intent
+from bot.intents.intent_keywords import intent_keywords
 
 def detect_intent(text: str, lang: str):
     text = text.lower().strip()
@@ -8,6 +8,5 @@ def detect_intent(text: str, lang: str):
 
         for keyword in keywords:
             if text in keyword:
-                print(Intent(intent_key))
                 return Intent(intent_key)
     return Intent.UNKNOWN

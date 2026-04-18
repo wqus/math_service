@@ -2,27 +2,27 @@ import asyncio
 from database.engine import engine
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp.web_app import Application
-
-from infrastucture.llm_client import MathAIClient
-from repositories.admins_repository import AdminRepository
-from repositories.banned_users_repository import BannedRepository
-from repositories.history_repository import HistoryRepository
-from repositories.stars_transactions_repository import PaymentsRepository
-from repositories.support_messages_repository import TicketRepository
-from repositories.users_repository import UserRepository
-from services.AIService import AIService
-from services.AccessService import AccessService
-from services.AdminService import AdminService
-from services.CaсheService import CacheService
-from services.HistoryService import HistoryService
-from services.PaymentsService import PaymentsService
-from services.UserService import UserService
-from startup import shutdown, startup, init_bot, load_texts, init_log
 from aiohttp import web
-from middlewares.user_language import InjectLanguage
-from middlewares.IntentMW import IntentMiddleware
-from core.config import LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST, WEBHOOK_PATH, LLM_URL
-from core.config import MODE
+
+from bot.infrastucture.llm_client import MathAIClient
+from bot.repositories.admins_repository import AdminRepository
+from bot.repositories.banned_users_repository import BannedRepository
+from bot.repositories.history_repository import HistoryRepository
+from bot.repositories.stars_transactions_repository import PaymentsRepository
+from bot.repositories.support_messages_repository import TicketRepository
+from bot.repositories.users_repository import UserRepository
+from bot.services.AIService import AIService
+from bot.services.AccessService import AccessService
+from bot.services.AdminService import AdminService
+from bot.services.CaсheService import CacheService
+from bot.services.HistoryService import HistoryService
+from bot.services.PaymentsService import PaymentsService
+from bot.services.UserService import UserService
+from bot.startup import shutdown, startup, init_bot, load_texts, init_log
+from bot.middlewares.user_language import InjectLanguage
+from bot.middlewares.IntentMW import IntentMiddleware
+from bot.core.config import LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST, WEBHOOK_PATH, LLM_URL
+from bot.core.config import MODE
 
 
 async def main():
@@ -143,6 +143,9 @@ async def main():
     except Exception as e:
         logger.critical(f"Ошибка при работе main функции: {e}", exc_info=True)
         raise
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 
 if __name__ == "__main__":

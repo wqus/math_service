@@ -39,12 +39,12 @@ def replace_degrees(match):
 
 
 # Функция для решения уравнения
-def solve_equation(user_input: str, inequality_type: str):
+def solve_equation(user_input: str):
     # Заменяем символы для представления бесконечности
     user_input = user_input.replace('oo', 'sp.oo')
 
     # Разделяем неравенство на левую и правую части
-    left, right = user_input.split(inequality_type)
+    left, right = user_input.split('=')
     left_expr = sp.parse_expr(left)
     right_expr = sp.parse_expr(right)
 
@@ -58,7 +58,7 @@ def solve_equation(user_input: str, inequality_type: str):
 
 def parse_expression(expr: str, evaluate: bool = True):
     cleaned = clean_expression(expr)
-    cleaned = re.sub(r'(sin|cos|tan|cot)\(-?\d+(\.\d+)?\)', replace_degrees, cleaned)
+    cleaned = re.sub(r'(sin|cos|tan|cot)\((-?\d+(?:\.\d+)?)\)', replace_degrees, cleaned)
     # Парсинг выражения через SymPy
     try:
         parsed = parse_expr(cleaned, transformations=transformations, evaluate=evaluate)
@@ -80,10 +80,6 @@ def parse_expression(expr: str, evaluate: bool = True):
     return parsed
 
 
-def safe_parse_to_numpy_answer(expr: str):
-    return parse_expression(expr)
-
-
 def safe_parse_to_numpy_function(expr: str):
     parsed = parse_expression(expr, evaluate=False)
     try:
@@ -93,7 +89,7 @@ def safe_parse_to_numpy_function(expr: str):
 
 
 # Функция генерации графика
-def generate_plot(f_numpy, expr_str: str, user_language: str, x_range: tuple[float, float] = (-10, 10)) -> io.BytesIO:
+def generate_plot(f_numpy, expr_str: str, user_language: str, x_range: tuple = (-10, 10)) -> io.BytesIO:
     # Проверка корректности диапазона
     if x_range[1] <= x_range[0]:
         raise ValueError("Некорректный диапазон значений X")

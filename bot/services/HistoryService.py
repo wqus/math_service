@@ -1,12 +1,12 @@
 from sqlalchemy.exc import SQLAlchemyError
 
-from core.ServiceResult import ServiceResult
-from repositories.history_repository import HistoryRepository
+from bot.core.ServiceResult import ServiceResult
+from bot.repositories.history_repository import HistoryRepository
 
 
 class HistoryService:
-    def __init__(self, repo: HistoryRepository):
-        self.repo = repo
+    def __init__(self, history_repo: HistoryRepository):
+        self.history_repo = history_repo
 
     async def get_user_history(
             self,
@@ -18,7 +18,7 @@ class HistoryService:
         Возвращает историю сообщений пользователя с пагинацией.
         """
         try:
-            rows = await self.repo.fetch_user_history(user_id, cursor, direction=direction)
+            rows = await self.history_repo.fetch_user_history(user_id, cursor, direction=direction)
 
             prev_cursor, next_cursor = None, None
 
@@ -29,10 +29,10 @@ class HistoryService:
                 first = rows[0]
                 last = rows[-1]
 
-                if await self.repo.has_newer_records(user_id, first["created_at"], first["id"]):
+                if await self.history_repo.has_newer_records(user_id, first["created_at"], first["id"]):
                     prev_cursor = (first["id"], first["created_at"])
 
-                if await self.repo.has_older_records(user_id, last["created_at"], last["id"]):
+                if await self.history_repo.has_older_records(user_id, last["created_at"], last["id"]):
                     next_cursor = (last["id"], last["created_at"])
 
             return ServiceResult(
@@ -61,4 +61,4 @@ class HistoryService:
         """
         Сохраняет сообщение пользователя (фоновая операция).
         """
-        await self.repo.create_message_record(user_id, input_text, output_text)
+        await self.history_repo.create_message_record(user_id, input_text, output_text)

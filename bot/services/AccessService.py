@@ -3,11 +3,11 @@ import logging
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from core.ServiceResult import ServiceResult
-from repositories.admins_repository import AdminRepository
-from repositories.banned_users_repository import BannedRepository
-from repositories.users_repository import UserRepository
-from services.CaсheService import CacheService
+from bot.core.ServiceResult import ServiceResult
+from bot.repositories.admins_repository import AdminRepository
+from bot.repositories.banned_users_repository import BannedRepository
+from bot.repositories.users_repository import UserRepository
+from bot.services.CaсheService import CacheService
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,11 @@ class AccessService:
             if attempts is not None:
                 return int(attempts) > 0
 
-            return await self.users_repo.check_and_reset_attempts(user_id)
+            attempts = await self.users_repo.check_and_reset_attempts(user_id)
+
+            await self.cache.set_attempts(user_id, attempts)
+
+            return attempts > 0
 
         except Exception:
             logger.exception(f"Ошибка при проверке попыток user={user_id}")

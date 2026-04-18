@@ -1,8 +1,8 @@
 from sqlalchemy.exc import SQLAlchemyError
 
-from core.ServiceResult import ServiceResult
-from repositories.banned_users_repository import BannedRepository
-from repositories.support_messages_repository import TicketRepository
+from bot.core.ServiceResult import ServiceResult
+from bot.repositories.banned_users_repository import BannedRepository
+from bot.repositories.support_messages_repository import TicketRepository
 
 
 class AdminService:
@@ -63,7 +63,7 @@ class AdminService:
                 success=False,
                 message_key='support_failed_answer')
 
-    async def fetch_bans(self, current_position: int = 0) -> ServiceResult:
+    async def fetch_bans(self, current_position: int = 1) -> ServiceResult:
         """
         Загружает список заблокированных пользователей.
         """

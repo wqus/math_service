@@ -1,4 +1,4 @@
-from keyboards.inline_kbs import answer_to_ticket_kb, unban_user_kb
+from bot.keyboards.inline_kbs import answer_to_ticket_kb, unban_user_kb
 
 
 async def format_tickets_list(tickets, texts, language) -> list:
@@ -8,7 +8,7 @@ async def format_tickets_list(tickets, texts, language) -> list:
     tickets_formatted = []
     for ticket in tickets:
         ticket_message = (
-            f'Ticket_id: {ticket['id']}\n\nUser_id: {ticket['user_id']}'
+            f"Ticket_id: {ticket['id']}\n\nUser_id: {ticket['user_id']}"
             f'\n{ticket['send_time'].strftime("%Y-%m-%d %H:%M")}\n\n"{ticket['message']}"')
         tickets_formatted.append((ticket_message, await answer_to_ticket_kb(ticket['id'], ticket['user_id'],
                                                                             texts[language]['support_answer_bt'])))

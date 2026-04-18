@@ -13,7 +13,7 @@ from bot.services.HistoryService import HistoryService
 from bot.services.AIService import AIService
 from bot.utils.utils import *
 from bot.states.PlotStates import PlotStates
-from keyboards.inline_kbs import ai_functions_kb
+from bot.keyboards.inline_kbs import ai_functions_kb
 
 router = Router()
 

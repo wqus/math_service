@@ -114,16 +114,15 @@ class UserRepository:
     async def check_and_reset_attempts(
             self,
             user_id: int
-    ) -> bool:
+    ) -> int:
         """
-        Проверяет наличие попыток.
+        Проверяет наличие попыток и возвращает актуальное количество.
 
         Если попытки закончились и время сброса прошло:
         → сбрасывает их на 5
 
-        Возвращает:
-        - True → попытки есть
-        - False → нет
+        Returns:
+            int: количество оставшихся попыток (0, 1, 2, 3, 4, 5...)
         """
         try:
             async with self.engine.begin() as conn:
@@ -146,7 +145,7 @@ class UserRepository:
 
                 row = result.fetchone()
 
-                return bool(row and row[0] > 0)
+                return row[0] if row and row[0] is not None else 0
 
         except SQLAlchemyError:
             logger.error("Ошибка при проверке попыток пользователя")

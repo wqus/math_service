@@ -26,7 +26,7 @@ class TicketRepository:
             logger.exception(f"Ошибка при сохранении обращения, user_id: {user_id}")
             raise
 
-    async def fetch_open_tickets(self, current_position: int = 0) -> dict:
+    async def fetch_open_tickets(self, current_position: int = 1) -> dict:
         """
         Получает открытые тикеты с пагинацией.
         """

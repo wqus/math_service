@@ -1,4 +1,4 @@
-from keyboards.inline_kbs import page_keyboard
+from bot.keyboards.inline_kbs import page_keyboard
 
 
 async def format_history_list(rows, next_cursor, prev_cursor, texts, language):

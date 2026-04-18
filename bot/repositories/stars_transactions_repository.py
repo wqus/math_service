@@ -28,10 +28,10 @@ class PaymentsRepository:
                 result_users = await conn.execute(text('''
                             UPDATE USERS
                             SET premium_until = COALESCE(premium_until, NOW()) + :premium_until * INTERVAL '1 day', premium_plan = :premium_plan, last_premium_at = NOW(),
-                            free_attempts_left = 0, role = 'premium' WHERE user_id = :user_id;'''),
+                            free_attempts_left = 0, role = 'premium' WHERE user_id = :user_id RETURNING id'''),
                                                   {'premium_until': days, 'premium_plan': product_type,
                                                    'user_id': user_id})
-                return result.fetchall(), result_users.fetchall()
+                return result.fetchone(), result_users.fetchone()
         except SQLAlchemyError:
             logger.exception(f"Ошибка при занесении/обновлении платежа в бд, user: {user_id}; charge_id: {charge_id}")
             raise

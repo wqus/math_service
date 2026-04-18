@@ -6,7 +6,7 @@ import aiofiles
 import redis.asyncio as redis
 from aiogram.fsm.storage.redis import RedisStorage
 import logging
-from core.config import WEBHOOK_URL_FULL_PATH
+from bot.core.config import WEBHOOK_URL_FULL_PATH
 import matplotlib
 
 matplotlib.use('Agg')
