@@ -21,4 +21,4 @@ COPY . .
 # Открываем порт (для webhook)
 EXPOSE 8080
 
-CMD ["python", "run.py"]
+CMD ["python", "bot/main.py"]
