@@ -21,8 +21,7 @@ from bot.services.UserService import UserService
 from bot.startup import shutdown, startup, init_bot, load_texts, init_log
 from bot.middlewares.user_language import InjectLanguage
 from bot.middlewares.IntentMW import IntentMiddleware
-from bot.core.config import LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST, WEBHOOK_PATH, LLM_URL
-from bot.core.config import MODE
+from bot.core.config import LOCAL_WEBHOOK_PORT, LOCAL_WEBHOOK_HOST, WEBHOOK_PATH, LLM_URL,MODE
 
 
 async def main():

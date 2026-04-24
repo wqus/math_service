@@ -11,14 +11,14 @@ import matplotlib
 
 matplotlib.use('Agg')
 
-from core.config import TOKEN, MODE
+from bot.core.config import TOKEN, MODE
 from aiogram import Bot, Dispatcher
 from handlers.admin import router as admin_router
 from handlers.common import router as common_router
 from handlers.user import router as user_router
 from handlers.payments import router as payments_router
 from aiogram.client.session.aiohttp import AiohttpSession
-from core.config import REDIS_HOST
+from bot.core.config import REDIS_HOST
 
 logger = logging.getLogger(name=__name__)
 
