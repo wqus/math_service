@@ -8,6 +8,7 @@ https://github.com/user-attachments/assets/6bc34551-1dc5-44e9-a136-75b8bf8805fb
 [![Docker](https://img.shields.io/badge/Docker-✓-blue)](https://www.docker.com/)
 [![License MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Coverage](https://img.shields.io/badge/coverage-30%25-yellow)](tests/)
 
 **Telegram-бот для решения математических задач**  
 Поддерживает примеры, уравнения, неравенства, построение графиков, freemium модель, оплата с помощью Telegram Stars, RBAC.
@@ -184,7 +185,7 @@ SymPy / NumPy / Matplotlib – математика и графика
 
 Docker – контейнеризация
 
-pytest / black / flake8 – тестирование и линтинг (в плане)
+pytest / pytest-asyncio / pytest-cov – юнит-тесты (покрытие ~30%, в процессе повышения)
 
 📁 Структура проекта
 text
@@ -207,8 +208,8 @@ math_service/
 ├── .env.example
 └── requirements.txt
 
-Тестирование и линтинг
-Раздел будет дополнен после внедрения тестов и нагрузочного тестирования.
+### Тестирование и линтинг
+В проекте используются юнит-тесты для проверки бизнес-логики сервисов и репозиториев. Текущее покрытие — ~30%, цель — 70% и выше.
 
 Планируемый стек:
 
@@ -220,17 +221,14 @@ black / isort – форматирование
 
 flake8 / ruff – статический анализ
 
-Пример команд (после реализации):
+### Запуск тестов
 
-bash
-pytest tests/                    # все тесты
-pytest tests/test_math_solver.py
-black bot/ --check
-flake8 bot/
+```bash
+pytest tests/ -v                    # все тесты
+pytest tests/test_services/ -v      # только сервисы
+pytest --cov=bot --cov-report=term  # с отчётом о покрыти
 
  Планы развития
-
-🔜 Модульные и интеграционные тесты (покрытие >80%)
 
 🔜 Нагрузочное тестирование (проверка под высоким RPS)
 
