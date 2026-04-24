@@ -1,5 +1,5 @@
 from aiogram import Bot
-from Filters.AccessRightsFilter import AccessRightsFilter
+from bot.Filters.AccessRightsFilter import AccessRightsFilter
 from aiogram import types, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext

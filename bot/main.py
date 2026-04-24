@@ -1,5 +1,5 @@
 import asyncio
-from database.engine import engine
+from bot.database.engine import engine
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp.web_app import Application
 from aiohttp import web

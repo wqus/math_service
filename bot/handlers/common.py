@@ -2,7 +2,7 @@ from aiogram import types, F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 
-from Filters.AccessRightsFilter import AccessRightsFilter
+from bot.Filters.AccessRightsFilter import AccessRightsFilter
 from bot.keyboards.reply_kbs import kb_info
 from bot.keyboards.inline_kbs import kb_language
 from aiogram.types import CallbackQuery
