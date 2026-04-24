@@ -16,4 +16,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD sh -c "alembic upgrade head && python -m bot.main"
+CMD ["python", "-m", "bot.main"]
