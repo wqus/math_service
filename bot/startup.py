@@ -13,10 +13,10 @@ matplotlib.use('Agg')
 
 from bot.core.config import TOKEN, MODE
 from aiogram import Bot, Dispatcher
-from handlers.admin import router as admin_router
-from handlers.common import router as common_router
-from handlers.user import router as user_router
-from handlers.payments import router as payments_router
+from bot.handlers.admin import router as admin_router
+from bot.handlers.common import router as common_router
+from bot.handlers.user import router as user_router
+from bot.handlers.payments import router as payments_router
 from aiogram.client.session.aiohttp import AiohttpSession
 from bot.core.config import REDIS_HOST
 
