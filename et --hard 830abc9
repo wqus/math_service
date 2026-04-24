@@ -1,0 +1,182 @@
+[33mc20ab5f[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{0}: rebase (pick): Add detailed logging for startup/shutdown debugging
+[33m555d698[m HEAD@{1}: rebase (fixup): feat: replace WEBHOOK_URL_FULL_PATH with WEBHOOK_PATH
+[33me71dcc3[m HEAD@{2}: rebase (fixup):  This is a combination of 8 commits.
+[33m500a7fe[m HEAD@{3}: rebase (fixup):  This is a combination of 7 commits.
+[33m5285898[m HEAD@{4}: rebase (fixup):  This is a combination of 6 commits.
+[33m0451fb0[m HEAD@{5}: rebase (fixup):  This is a combination of 5 commits.
+[33mac0a8a3[m HEAD@{6}: rebase (fixup):  This is a combination of 4 commits.
+[33mcfeb928[m HEAD@{7}: rebase (fixup):  This is a combination of 3 commits.
+[33m0ffd3fa[m HEAD@{8}: rebase (fixup):  This is a combination of 2 commits.
+[33m830abc9[m HEAD@{9}: rebase (continue): feat: replace WEBHOOK_URL_FULL_PATH with WEBHOOK_PATH
+[33m052f0cb[m HEAD@{10}: rebase (continue): feat: replace WEBHOOK_URL_FULL_PATH with WEBHOOK_PATH
+[33m07bd6ed[m HEAD@{11}: rebase (fixup):  This is a combination of 2 commits.
+[33m77a9c02[m HEAD@{12}: rebase (continue): feat: replace WEBHOOK_URL_FULL_PATH with WEBHOOK_PATH
+[33mbab61cf[m HEAD@{13}: rebase (fixup):  This is a combination of 5 commits.
+[33mf899ce4[m HEAD@{14}: rebase (fixup):  This is a combination of 4 commits.
+[33m11c0e22[m HEAD@{15}: rebase (fixup):  This is a combination of 3 commits.
+[33m80f6411[m HEAD@{16}: rebase (fixup):  This is a combination of 2 commits.
+[33m0b0ef65[m HEAD@{17}: rebase (continue): feat: replace WEBHOOK_URL_FULL_PATH with WEBHOOK_PATH
+[33m53138fb[m HEAD@{18}: rebase (continue): feat: replace WEBHOOK_URL_FULL_PATH with WEBHOOK_PATH
+[33mca12c8f[m HEAD@{19}: rebase (fixup): feat: add Alembic migrations for database schema management
+[33m54708f5[m HEAD@{20}: rebase (fixup): # This is a combination of 2 commits.
+[33m0d51c60[m HEAD@{21}: rebase (pick): feat: add Alembic migrations for database schema management
+[33maf4eeda[m HEAD@{22}: rebase (fixup): Create README.md
+[33m6a5245e[m HEAD@{23}: rebase (fixup): # This is a combination of 9 commits.
+[33ma8d20e0[m HEAD@{24}: rebase (fixup): # This is a combination of 8 commits.
+[33mb1302cf[m HEAD@{25}: rebase (fixup): # This is a combination of 7 commits.
+[33mde13970[m HEAD@{26}: rebase (fixup): # This is a combination of 6 commits.
+[33mab207b8[m HEAD@{27}: rebase (fixup): # This is a combination of 5 commits.
+[33mcdbc46f[m HEAD@{28}: rebase (fixup): # This is a combination of 4 commits.
+[33m1e668c9[m HEAD@{29}: rebase (fixup): # This is a combination of 3 commits.
+[33m34a2bc6[m HEAD@{30}: rebase (fixup): # This is a combination of 2 commits.
+[33mf56ed0a[m HEAD@{31}: rebase (pick): Create README.md
+[33mde86385[m HEAD@{32}: rebase (start): checkout HEAD~60
+[33mc28e1d4[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m HEAD@{33}: rebase (finish): returning to refs/heads/main
+[33mc28e1d4[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m HEAD@{34}: rebase (squash): test: add comprehensive service tests, improve coverage, fix validation logic and refactor project structure
+[33m7705998[m HEAD@{35}: rebase (squash): # This is a combination of 9 commits.
+[33m8c696b0[m HEAD@{36}: rebase (squash): # This is a combination of 8 commits.
+[33m827cc3b[m HEAD@{37}: rebase (squash): # This is a combination of 7 commits.
+[33md155190[m HEAD@{38}: rebase (squash): # This is a combination of 6 commits.
+[33mfb02008[m HEAD@{39}: rebase (squash): # This is a combination of 5 commits.
+[33mebb560c[m HEAD@{40}: rebase (squash): # This is a combination of 4 commits.
+[33mcf8b439[m HEAD@{41}: rebase (squash): # This is a combination of 3 commits.
+[33m8ce07e0[m HEAD@{42}: rebase (squash): # This is a combination of 2 commits.
+[33mecf3f04[m HEAD@{43}: rebase (start): checkout HEAD~10
+[33m45e743b[m HEAD@{44}: commit: fix: improve payments validation and add tests (100% coverage)
+[33ma06614f[m HEAD@{45}: commit: Завершил тестирование юнит тестами AIService, CacheService. Покрытие составило 100%
+[33m0c78797[m HEAD@{46}: commit: Завершил тестирование AdminService. Покрытие составило 100%
+[33m504b134[m HEAD@{47}: commit: Завершил тестирование AccessService. Покрытие составило 89%
+[33m85628e7[m HEAD@{48}: commit: fix: check_and_reset_attempts теперь возвращает количество попыток, а не bool
+[33m97c03c0[m HEAD@{49}: commit: Завершил тестирование презентер слоя. Новый подход к анализу покрытия показал что покрытие составляет лишь 10%
+[33m1196547[m HEAD@{50}: commit: Добавил ко всем импортам модулей проекта bot. в начало
+[33m371df33[m HEAD@{51}: commit: Добавил новые тесты, первый мок тест, отказ от run.py
+[33m0b76867[m HEAD@{52}: commit: Закончил тесты для utils.py полностью
+[33mecf3f04[m HEAD@{53}: commit: Закончил тесты для utils.py + рефакторинг функций в utils.py
+[33m64c493c[m HEAD@{54}: commit: Написал первые тесты, проверил общее покрытие проекта - 5%
+[33m38df304[m HEAD@{55}: commit: Refactored parsing pipeline, removed duplication, improved error handling and testability
+[33m721cebf[m HEAD@{56}: commit: Write first test
+[33m0514666[m HEAD@{57}: commit: Исправил промпты, чтобы не использовал LaTeX-разметку
+[33m2301c9d[m HEAD@{58}: commit: Исправил промпты
+[33m02c8ac8[m HEAD@{59}: commit: Поменял название модели и вернул старые промпты
+[33m887ab2c[m HEAD@{60}: commit: Поменял название модели и вернул старые промпты
+[33m109655a[m HEAD@{61}: commit: Поменял структуру промпта
+[33me61736a[m HEAD@{62}: commit: Добавил логирование запроса, отсылаемого ллм
+[33mf3ed212[m HEAD@{63}: commit: Переход на prompt вмсто message
+[33me4adb7c[m HEAD@{64}: commit: trigger ci cd
+[33m6bc5aca[m HEAD@{65}: commit: перешёл с /chat на /generate т.к. старая версия ollama, также теперь создаю full_prompt для передачи в generate
+[33m356644d[m HEAD@{66}: commit: trigger ci/cd
+[33m65a753f[m HEAD@{67}: commit: trigger ci/cd
+[33m0eac862[m HEAD@{68}: commit: change to api/chat
+[33mb7f53b3[m HEAD@{69}: commit: change api/chat to api/generate
+[33m058d320[m HEAD@{70}: commit: trigger ci/cd (udpate .env.prod)
+[33mf170e8b[m HEAD@{71}: commit: trigger ci/cd (udpate .env.prod)
+[33mf1c66f7[m HEAD@{72}: commit: fix: add session cleanup on shutdown
+[33m3f47b06[m HEAD@{73}: commit: bug fix & udpate ui
+[33m3e9c553[m HEAD@{74}: commit: Доделал логику и исправил баги
+[33m3e11a9a[m HEAD@{75}: commit: fix
+[33mefb8fe6[m HEAD@{76}: commit: Update requirements.txt
+[33meccc754[m HEAD@{77}: pull origin main: Merge made by the 'ort' strategy.
+[33ma185a31[m HEAD@{78}: commit: Реализовал генерацию похожего выражения
+[33m1685e2b[m HEAD@{79}: commit: Набросал код для AIService, перехожу к рефакторингу
+[33m2be30f5[m HEAD@{80}: commit: Создал папку infrastructure, в которой хранится llm_client.py, с помощью которого будем обращаться в ЛЛМ, создал inline клавиатуры для ИИ функий, AIService с функциями загрушками пока что и хендлер, обрабатывающий callback запросы для них. Сделал чтобы клавиатура отправлялось под сообщением с овтетом на математическое выражение пользователя
+[33ma99c0ee[m HEAD@{81}: commit: refactor
+[33md294fde[m HEAD@{82}: commit: bugfix
+[33m2cc7e08[m HEAD@{83}: commit: Исправил has_more_kb2
+[33m9b4bfac[m HEAD@{84}: commit: Исправил has_more_kb
+[33m393b19f[m HEAD@{85}: commit: улучшил ui, ux в сообщениях с тикетами
+[33mb303b02[m HEAD@{86}: commit: Исправил несоответствие message key с текстом из locales
+[33m01da616[m HEAD@{87}: commit: chore: trigger CI/CD
+[33m151dccb[m HEAD@{88}: commit: Исправил несоотвестие message_key текстом в locales некоторых частях кода
+[33m20c0ece[m HEAD@{89}: commit: refactor: made premium_until always string type
+[33m0bc8220[m HEAD@{90}: commit: refactor: change send_bans to send_tickets in handle_tickets_command
+[33m332335d[m HEAD@{91}: pull origin main --allow-unrelated-histories: Merge made by the 'ort' strategy.
+[33m5d36bcd[m HEAD@{92}: commit: refactor: change ticket_service to admin_service
+[33m6781aca[m HEAD@{93}: commit: refactoting: update env.py
+[33m603ed6f[m HEAD@{94}: pull --rebase origin main (finish): returning to refs/heads/main
+[33m603ed6f[m HEAD@{95}: pull --rebase origin main (pick): fix: import NullPool from sqlalchemy.pool in env.py
+[33m168bffa[m HEAD@{96}: pull --rebase origin main (start): checkout 168bffa5b2cfb92c98ff66e721e0a219ac4b7d2b
+[33m01a06fe[m HEAD@{97}: commit: fix: import NullPool from sqlalchemy.pool in env.py
+[33mebcea19[m HEAD@{98}: pull --rebase origin main (finish): returning to refs/heads/main
+[33mebcea19[m HEAD@{99}: pull --rebase origin main (pick): chore: trigger CI/CD
+[33m0459987[m HEAD@{100}: pull --rebase origin main (start): checkout 0459987cb61a4647c22a8b85079ba6d7fe290d19
+[33me246741[m HEAD@{101}: commit: chore: trigger CI/CD
+[33mae06d51[m HEAD@{102}: reset: moving to HEAD~1
+[33md912cd6[m HEAD@{103}: commit: chore: trigger CI/CD
+[33mae06d51[m HEAD@{104}: pull --rebase origin main (finish): returning to refs/heads/main
+[33mae06d51[m HEAD@{105}: pull --rebase origin main (pick): feat: add Alembic migrations for database schema management
+[33m87f3521[m HEAD@{106}: pull --rebase origin main (start): checkout 87f3521025d45277b8fb27c7d21776f938bd5df8
+[33m1739c5a[m HEAD@{107}: commit: feat: add Alembic migrations for database schema management
+[33m0139feb[m HEAD@{108}: commit: Add detailed logging for startup/shutdown debugging
+[33m7e06f1e[m HEAD@{109}: commit: feat: replace WEBHOOK_URL_FULL_PATH with WEBHOOK_PATH
+[33m548ba29[m HEAD@{110}: commit: chore: trigger CI/CD pipeline
+[33mbbf07bc[m HEAD@{111}: commit: feat: replace WEBHOOK_PATH with WEBHOOK_FULL_PATH and create logs directory in Dockerfile
+[33maf35cb2[m HEAD@{112}: pull origin main: Merge made by the 'ort' strategy.
+[33m85e6160[m HEAD@{113}: commit: fix: create logs directory in Dockerfile
+[33m95453c5[m HEAD@{114}: commit: chore: trigger CI/CD pipeline
+[33m079f1f6[m HEAD@{115}: commit: chore: trigger CI/CD pipeline
+[33ma85b1ee[m HEAD@{116}: commit: chore: trigger CI/CD pipeline
+[33md209353[m HEAD@{117}: commit: chore: trigger CI/CD pipeline
+[33m01fc3ed[m HEAD@{118}: commit: chore: trigger CI/CD pipeline
+[33m3fc4bf6[m HEAD@{119}: checkout: moving from main to main
+[33m3fc4bf6[m HEAD@{120}: merge origin/main: Merge made by the 'ort' strategy.
+[33m0086702[m HEAD@{121}: commit: chore: trigger CI/CD
+[33mde86385[m HEAD@{122}: commit: chore: trigger CI/CD pipeline
+[33m4f4c490[m HEAD@{123}: commit: Trigger CI/CD
+[33m589050f[m HEAD@{124}: commit: Trigger CI/CD
+[33mc00ed9c[m[33m ([m[1;32mbackup-before-change[m[33m)[m HEAD@{125}: filter-branch: rewrite
+[33m689d0ab[m HEAD@{126}: rebase (abort): returning to refs/heads/main
+[33me33aaa1[m HEAD@{127}: commit: Add .idea to gitignore
+[33mdd0e6d9[m HEAD@{128}: rebase (start): checkout dd0e6d9082c00747018a53b131eb6ecc4dbf7ce5
+[33m689d0ab[m HEAD@{129}: commit: chore: trigger CI/CD pipeline
+[33m6973fcb[m HEAD@{130}: commit: Restore Dockerfile
+[33md0e3fa6[m HEAD@{131}: rebase (finish): returning to refs/heads/main
+[33md0e3fa6[m HEAD@{132}: rebase (pick): refactor: replace hardcoded PostgreSQL credentials with env vars
+[33ma4c3adf[m HEAD@{133}: rebase (pick): refactor: replace hardcoded PostgreSQL credentials with env vars
+[33m171dfab[m HEAD@{134}: rebase (start): checkout origin/main
+[33m26d5ae9[m HEAD@{135}: commit: refactor: replace hardcoded PostgreSQL credentials with env vars
+[33m9b563d3[m HEAD@{136}: commit: refactor: replace hardcoded PostgreSQL credentials with env vars
+[33mb2c579b[m HEAD@{137}: commit: refactor: remove unnecessary if __name__ == '__main__' block
+[33m24da396[m HEAD@{138}: commit: refactor: remove 'bot.' from imports + add Redis config
+[33mefb77af[m HEAD@{139}: commit: remove pycache and ignored files
+[33m80c48e5[m HEAD@{140}: commit: prepare for docker deploy: env-based config
+[33m39edaa7[m HEAD@{141}: Branch: renamed refs/heads/master to refs/heads/main
+[33m39edaa7[m HEAD@{143}: commit: Refactor project entry point to simplify imports
+[33me972295[m HEAD@{144}: commit: Refactor config: unify dev/prod handling using ENV_FILE, remove hardcoded env loading
+[33mfa06e86[m HEAD@{145}: commit: Refactor project structure: move source code to /bot, separate dev/prod env handling, unify startup/shutdown logic
+[33m41faaba[m HEAD@{146}: commit: refactor: project restructuring and architecture improvement
+[33m80e8fc7[m HEAD@{147}: commit: Закончил весь функционал для администрации и владельца. Итог: просмотр и ответ на тикеты, возможность банить и разбанивать пользователей, просматривать историю банов, выдача роли администратора(только для владельца), возможность забрать роль администратора(только для владельца)
+[33mb870bdd[m HEAD@{148}: commit: Реализовал возможность блокировать/разблокировать пользователей
+[33m4d52ec0[m HEAD@{149}: commit: Кнопка "Поддержка" для обычных пользователей, в которой могут написать о своей проблеме.
+[33m9598988[m HEAD@{150}: commit: Реализовано логгирование. Добавлена оплата, bug fix
+[33mbf7e428[m HEAD@{151}: commit: Реализовал работу на вебхуках и начал логгирование
+[33mc51adf8[m HEAD@{152}: checkout: moving from master to master
+[33mc51adf8[m HEAD@{153}: merge future/migration-to-postgres: Fast-forward
+[33mdb9f524[m HEAD@{154}: checkout: moving from future/migration-to-postgres to master
+[33mc51adf8[m HEAD@{155}: checkout: moving from master to future/migration-to-postgres
+[33mdb9f524[m HEAD@{156}: checkout: moving from future/migration-to-postgres to master
+[33mc51adf8[m HEAD@{157}: commit: Implemented the transition from sqlite to postgres
+[33mdb9f524[m HEAD@{158}: checkout: moving from master to future/migration-to-postgres
+[33mdb9f524[m HEAD@{159}: commit: Before migration
+[33me2bb071[m HEAD@{160}: commit: Добавил историю вводов пользователя, реализовав удобный интерфейс с листанием страниц. Чтобы увидеть свою историю необходимо нажать на соотвествующую кнопку. Исправил способ ответов бота, вместо match теперь сразу по ключу user_language выводится сообщение.
+[33m8b9c310[m HEAD@{161}: commit: Проект структурирован, работает.
+[33m55c6da5[m HEAD@{162}: reset: moving to HEAD
+[33m55c6da5[m HEAD@{163}: merge feature/redis: Fast-forward
+[33m2e66246[m HEAD@{164}: checkout: moving from feature/redis to master
+[33m55c6da5[m HEAD@{165}: checkout: moving from master to feature/redis
+[33m2e66246[m HEAD@{166}: checkout: moving from feature/redis to master
+[33m55c6da5[m HEAD@{167}: reset: moving to HEAD
+[33m55c6da5[m HEAD@{168}: commit: Интегрировал Redis в проект. Состояния пользователей при нажатии кнопок 'Plot' сохраняются на редис сервере
+[33m2e66246[m HEAD@{169}: checkout: moving from master to feature/redis
+[33m2e66246[m HEAD@{170}: merge migrate-to-aiogram: Fast-forward
+[33m1cb5f22[m HEAD@{171}: checkout: moving from migrate-to-aiogram to master
+[33m2e66246[m HEAD@{172}: reset: moving to HEAD
+[33m2e66246[m HEAD@{173}: commit: Для коммита:
+[33ma7254d3[m HEAD@{174}: commit: Функция process_plot переделана в хендлер, ловящий состояние 'waiting_for_function с помощью класса StatesGroup.
+[33mca68435[m HEAD@{175}: commit: Сделал асинхронным все функции, которые использовали sqlite3 (update_user_language, update_user_state, get_user_language, get_user_state)
+[33mdc365ee[m HEAD@{176}: commit: Начат переход к асинхронному коду(asyncio, aiogram, aiosqlite). Создана структура проекта. Реализованы асинхронные middleware, функции - init_db, init_user, Хендлеры - start_reply
+[33m1cb5f22[m HEAD@{177}: checkout: moving from master to migrate-to-aiogram
+[33m1cb5f22[m HEAD@{178}: checkout: moving from master to master
+[33m1cb5f22[m HEAD@{179}: commit: Реализовал кнопку 'График' полноценно на всех языках интерфейса. Создал фаайлы для создания новых столбцов и для удаления пустых ячеек в БД
+[33m20e0a1a[m HEAD@{180}: commit: Реализовал во всем боте поддержку двух языков, благоларя middleware, добавил в json объекты с ответами бота дополнительную информацию для ответов на нажатые кнопки пользователем. Полностью корректно работает БД
+[33m100ded5[m HEAD@{181}: commit: Подключил БД(пользователи добавляются в таблицу). При выборе языка меняется значение в таблице. Остальные хендлеры пока в работе
+[33m32e7ea1[m HEAD@{182}: commit (initial): Git is initialized for the project
