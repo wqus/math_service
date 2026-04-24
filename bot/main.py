@@ -70,8 +70,8 @@ async def main():
         access_service = AccessService(users_repo=users_repo, ban_repo=ban_repo, admins_repo=admins_repo,
                                        cache=cache)
         admin_service = AdminService(ticket_repo=ticket_repo, ban_repo=ban_repo)
-        history_service = HistoryService(repo=history_repo)
-        payments_service = PaymentsService(repo=payments_repo)
+        history_service = HistoryService(history_repo=history_repo)
+        payments_service = PaymentsService(payments_repo=payments_repo)
         user_service = UserService(repo=users_repo)
         ai_service = AIService(llm_client= llm_client)
         logger.info("Сервисы инициализированы")

@@ -1,20 +1,29 @@
 from aiogram import types, F, Router
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
-from sympy import Eq, solve, symbols
 import datetime as dt
 
 from bot.Filters.AccessRightsFilter import AccessRightsFilter
 from bot.Filters.IntentFilter import IntentFilter
+
 from bot.keyboards.reply_kbs import kb_info
+from bot.keyboards.inline_kbs import ai_functions_kb
+
 from bot.presenters.history_presenter import format_history_list
+
 from bot.services.AccessService import AccessService
 from bot.services.HistoryService import HistoryService
 from bot.services.AIService import AIService
-from bot.utils.utils import *
-from bot.states.PlotStates import PlotStates
-from bot.keyboards.inline_kbs import ai_functions_kb
 
+from bot.states.PlotStates import PlotStates
+
+from bot.utils.utils import (
+    solve_equation,
+    solve_inequality,
+    evaluate_expression,
+    to_numpy_function,
+    generate_plot
+)
 router = Router()
 
 
@@ -46,56 +55,53 @@ async def show_user_history(message: types.Message, texts: dict, history_service
 
 
 @router.message(AccessRightsFilter(0), F.text.contains("="))
-async def solve_equation(message: types.Message, user_language: str, texts: dict, history_service: HistoryService):
-    """
-    Решает математическое уравнение.
-    """
+async def handle_equation(message: types.Message, user_language: str, texts: dict,
+                          history_service: HistoryService):
+
     try:
-        x = symbols('x')
-        user_input = message.text
-        equation_parts = user_input.split('=')
+        result = solve_equation(message.text)
 
-        if len(equation_parts) == 2:
-            left = equation_parts[0]
-            right = equation_parts[1]
+        keyboard = await ai_functions_kb(
+            message.text,
+            texts[user_language]['show_solution'],
+            texts[user_language]['generate_similar']
+        )
 
-            equation = Eq(safe_parse_to_numpy_answer(left), safe_parse_to_numpy_answer(right))
-            solutions = solve(equation, x)
+        await message.answer(result, reply_markup=keyboard.as_markup())
 
-            formatted_solutions = ('; '.join(
-                [f'x = {str(round(sol, 3)).rstrip("0").rstrip(".") if "." in str(sol) else str(sol)}' for sol in
-                 solutions]))
-            keyboard = await ai_functions_kb(user_input, texts[user_language]['show_solution'],
-                                             texts[user_language]['generate_similar'])
-            await message.answer(text=formatted_solutions, reply_markup=keyboard.as_markup())
-            await history_service.save_message(message.from_user.id, user_input, formatted_solutions)
-        else:
-            await message.answer(text=texts[user_language]['wrong_input'])
+        await history_service.save_message(
+            message.from_user.id,
+            message.text,
+            result
+        )
 
     except Exception as e:
-        await message.answer(text=f'{texts[user_language]["error"]}{e}')
+        await message.answer(f"{texts[user_language]['error']}{e}")
 
 
-@router.message(AccessRightsFilter(0), lambda message: any(s in message.text for s in ['<', '<=', '>=', '>']))
-async def solve_inequality(message: types.Message, user_language: str, texts: dict, history_service: HistoryService):
-    """
-    Решает математическое неравенство.
-    """
+@router.message(AccessRightsFilter(0), lambda m: any(op in m.text for op in ['<', '>', '<=', '>=']))
+async def handle_inequality(message: types.Message, user_language: str, texts: dict,
+                            history_service: HistoryService):
+
     try:
-        user_input = message.text.lower()
-        user_input = user_input.replace('oo', 'sp.oo')
+        result = solve_inequality(message.text)
 
-        x = sp.symbols('x')
-        solution = sp.solve_univariate_inequality(safe_parse_to_numpy_answer(user_input), x, relational=False)
+        keyboard = await ai_functions_kb(
+            message.text,
+            texts[user_language]['show_solution'],
+            texts[user_language]['generate_similar']
+        )
 
-        formatted_solution = f'x ∈ {sp.pretty(solution, use_unicode=True)}'
-        keyboard = await ai_functions_kb(user_input, texts[user_language]['show_solution'],
-                                         texts[user_language]['generate_similar'])
-        await message.answer(text=formatted_solution, reply_markup=keyboard.as_markup())
-        await history_service.save_message(message.from_user.id, user_input, formatted_solution)
+        await message.answer(result, reply_markup=keyboard.as_markup())
+
+        await history_service.save_message(
+            message.from_user.id,
+            message.text,
+            result
+        )
 
     except Exception as e:
-        await message.answer(text=f'{texts[user_language]["error"]}{e}')
+        await message.answer(f"{texts[user_language]['error']}{e}")
 
 
 @router.message(PlotStates.waiting_for_function)
@@ -111,36 +117,30 @@ async def generate_and_send_plot(
     Генерирует и отправляет график функции.
     """
     try:
-        original_text = message.text.strip()
-        f_numpy = safe_parse_to_numpy_function(original_text)
-        plot_buf = generate_plot(f_numpy, original_text, user_language)
+        expr = message.text.strip()
 
-        raw_bytes = plot_buf.read()
+        f = to_numpy_function(expr)
+        buf = generate_plot(f, expr, user_language)
 
-        x_range = (-10, 10)
-        caption_template = texts[user_language]['plot_caption']
-        caption_filled = caption_template.format(
-            original_text=original_text,
-            x_min=x_range[0],
-            x_max=x_range[1]
+        await history_service.save_message(
+            message.from_user.id,
+            expr,
+            "plot📈"
         )
 
-        await history_service.save_message(message.from_user.id, original_text, 'plot📈')
-
-        reply_markup = await kb_info(texts, user_language)
-
         await message.answer_photo(
-            photo=types.BufferedInputFile(raw_bytes, filename="plot.png"),
-            caption=caption_filled,
-            parse_mode='HTML',
-            reply_markup=reply_markup
+            photo=types.BufferedInputFile(buf.read(), filename="plot.png"),
+            caption=texts[user_language]['plot_caption'].format(expr),
+            parse_mode="HTML",
+            reply_markup=await kb_info(texts, user_language)
         )
 
         await state.clear()
-        attempts_left = await access_service.decrease_attempts(message.from_user.id)
 
-        if attempts_left <= 0:
-            await message.answer(texts[user_language]['attempts_ended'], parse_mode='HTML')
+        left = await access_service.decrease_attempts(message.from_user.id)
+
+        if left <= 0:
+            await message.answer(texts[user_language]['attempts_ended'])
 
     except Exception as e:
         await message.answer(texts[user_language]["plot_try_again"])
@@ -223,18 +223,25 @@ async def paginate_history(callback: CallbackQuery, texts: dict, history_service
 
 
 @router.message(AccessRightsFilter(0), IntentFilter("unknown"))
-async def evaluate_expression(message: types.Message, user_language: str, texts: dict, history_service: HistoryService):
-    """
-    Вычисляет математическое выражение.
-    """
-    try:
-        user_input = message.text.lower()
+async def handle_expression(message: types.Message, user_language: str, texts: dict,
+                            history_service: HistoryService):
 
-        answer = safe_parse_to_numpy_answer(user_input)
-        formatted_result = str(round(answer, 3)).rstrip('0').rstrip('.') if '.' in str(answer) else str(answer)
-        keyboard = await ai_functions_kb(user_input, texts[user_language]['show_solution'],
-                                         texts[user_language]['generate_similar'])
-        await message.answer(text=formatted_result, reply_markup=keyboard.as_markup())
-        await history_service.save_message(message.from_user.id, user_input, formatted_result)
+    try:
+        result = evaluate_expression(message.text)
+
+        keyboard = await ai_functions_kb(
+            message.text,
+            texts[user_language]['show_solution'],
+            texts[user_language]['generate_similar']
+        )
+
+        await message.answer(result, reply_markup=keyboard.as_markup())
+
+        await history_service.save_message(
+            message.from_user.id,
+            message.text,
+            result
+        )
+
     except Exception as e:
-        await message.answer(text=f'{texts[user_language]["error"]}{e}')
+        await message.answer(f"{texts[user_language]['error']}{e}")
