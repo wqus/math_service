@@ -12,7 +12,6 @@ class UserService:
     async def init_user(self, user_id: int) -> None:
         """
         Инициализирует пользователя (если не существует).
-        Ничего не возвращает.
         """
         try:
             await self.repo.create_user_if_not_exists(user_id)
