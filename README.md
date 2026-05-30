@@ -8,10 +8,10 @@ https://github.com/user-attachments/assets/6bc34551-1dc5-44e9-a136-75b8bf8805fb
 [![Docker](https://img.shields.io/badge/Docker-✓-blue)](https://www.docker.com/)
 [![License MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Coverage](https://img.shields.io/badge/coverage-30%25-yellow)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-50%25-yellow)](tests/)
 
 **Telegram-бот для решения математических задач**  
-Поддерживает примеры, уравнения, неравенства, построение графиков, freemium модель, оплата с помощью Telegram Stars, RBAC.
+Поддерживает примеры, уравнения, неравенства, построение графиков, генерация похожих примеров и пошаговых решений, freemium модель, оплата с помощью Telegram Stars, RBAC.
 
 ---
 
@@ -52,6 +52,9 @@ https://github.com/user-attachments/assets/6bc34551-1dc5-44e9-a136-75b8bf8805fb
 - **Двуязычность** (русский / английский) – выбор языка при `/start`
 - **Административные инструменты** (модерация, просмотр тикетов, баны)
 - **Инструменты для владельца** (выдать/забрать роль админа)
+- **Генерация похожих примеров с помощью LLM** (модерация, просмотр тикетов, баны)
+- **Генерация пошаговых решений с помощью LLM** (модерация, просмотр тикетов, баны)
+
 
 ---
 
@@ -209,17 +212,6 @@ math_service/
 └── requirements.txt
 
 ### Тестирование и линтинг
-В проекте используются юнит-тесты для проверки бизнес-логики сервисов и репозиториев. Текущее покрытие — ~30%, цель — 70% и выше.
-
-Планируемый стек:
-
-pytest + pytest-asyncio – модульные и интеграционные тесты
-
-locust / k6 – нагрузочное тестирование
-
-black / isort – форматирование
-
-flake8 / ruff – статический анализ
 
 ### Запуск тестов
 
