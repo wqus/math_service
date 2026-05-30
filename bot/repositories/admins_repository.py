@@ -15,7 +15,7 @@ class AdminRepository:
         """
         try:
             async with self.engine.begin() as conn:
-                await conn.execute(text("""UPDATE users SET role = 'admin' WHERE user_id = :admin_id)
+                await conn.execute(text("""UPDATE users SET role = 'admin' WHERE user_id = :admin_id
                 """), {'admin_id': admin_id})
         except SQLAlchemyError:
             logger.exception(f"Ошибка при назначении администратора")

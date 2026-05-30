@@ -5,9 +5,6 @@ import logging
 
 logger = logging.getLogger(name=__name__)
 
-# NOTE:
-# freemium checks use fail-open strategy for UX
-# premium/admin checks must always fail-closed
 class HasAttemptsLeft(BaseFilter):
     async def __call__(self, message: types.Message, access_service: AccessService, **kwargs):
         role = await access_service.get_user_role(message.from_user.id)

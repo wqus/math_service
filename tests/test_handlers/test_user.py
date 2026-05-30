@@ -75,7 +75,7 @@ async def test_handle_inequality_success():
 
     with patch('bot.handlers.user.solve_inequality') as mock_solve, patch('bot.handlers.user.ai_functions_kb') as mock_kb:
         mock_solve.return_value = "x > 2"
-        mock_kb.return_value = AsyncMock()
+        mock_kb.return_value = MagicMock()
         mock_kb.return_value.as_markup.return_value = "keyboard"
 
         await handle_inequality(message, user_language, texts, history_service)

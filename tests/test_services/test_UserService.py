@@ -7,7 +7,6 @@ from bot.services.UserService import UserService
 @pytest.mark.asyncio
 async def test_init_user_success():
     repo = AsyncMock()
-    repo.create_user_if_not_exists = AsyncMock()
     service = UserService(repo)
 
     await service.init_user(12345)

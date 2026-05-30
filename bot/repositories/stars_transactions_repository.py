@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 class PaymentsRepository:
     def __init__(self, engine):
         self.engine = engine
-    # Вставка информации о платеже в таблицу stars_transactions
     async def insert_into_stars_transactions(self, user_id: int, payload: str, amount: int, charge_id: str, product_type: str,
                                              days: int):
         """
@@ -18,7 +17,6 @@ class PaymentsRepository:
         logger.info(f"Обработка платежа user: {user_id}")
         try:
             async with self.engine.begin() as conn:
-                # Запрос для добавления транзакции в таблицу stars_transactions
                 result = await conn.execute(text('''INSERT INTO stars_transactions (user_id, payload, amount, 
                             purchased_at, charge_id, status, product_type)
                             VALUES (:user_id, :payload, :amount, NOW(), :charge_id, 'success', :product_type)
