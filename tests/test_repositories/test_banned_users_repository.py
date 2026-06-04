@@ -1,5 +1,9 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+
 from bot.repositories.banned_users_repository import BannedRepository
 
 
@@ -146,3 +150,29 @@ async def test_unban_user_success(engine):
         ban = result.mappings().fetchone()
 
         assert ban["active"] is False
+
+
+@pytest.mark.asyncio
+async def test_ban_user_error():
+    repo = BannedRepository(engine=AsyncMock())
+
+    mock_ctx = AsyncMock()
+    mock_ctx.__aenter__ = AsyncMock(side_effect=SQLAlchemyError("DB error"))
+    repo.engine.begin = MagicMock(return_value=mock_ctx)
+
+    with patch('bot.repositories.banned_users_repository.text'):
+        with pytest.raises(SQLAlchemyError):
+            await repo.ban_user(1, 2, 'reason')
+
+
+@pytest.mark.asyncio
+async def test_unban_user_error():
+    repo = BannedRepository(engine=AsyncMock())
+
+    mock_ctx = AsyncMock()
+    mock_ctx.__aenter__ = AsyncMock(side_effect=SQLAlchemyError("DB error"))
+    repo.engine.begin = MagicMock(return_value=mock_ctx)
+
+    with patch('bot.repositories.banned_users_repository.text'):
+        with pytest.raises(SQLAlchemyError):
+            await repo.unban_user(1)

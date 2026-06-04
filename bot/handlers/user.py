@@ -142,7 +142,7 @@ async def generate_and_send_plot(
         if left <= 0:
             await message.answer(texts[user_language]['attempts_ended'])
 
-    except Exception as e:
+    except Exception:
         await message.answer(texts[user_language]["plot_try_again"])
         await state.clear()
 

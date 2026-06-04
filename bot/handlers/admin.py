@@ -28,9 +28,11 @@ async def handle_tickets_command(message: types.Message, user_language: str, tex
 
     if fetch_tickets_result.success:
         await send_tickets(message, fetch_tickets_result, user_language, texts)
-        has_more_kb = await load_three_tickets_kb(fetch_tickets_result.data['last_ticket_id'], "✅") if fetch_tickets_result.data[
+        has_more_kb = await load_three_tickets_kb(fetch_tickets_result.data['last_ticket_id'], "✅") if \
+        fetch_tickets_result.data[
             'has_more'] else None
-        await message.answer(text=texts[user_language][fetch_tickets_result.message_key], reply_markup=has_more_kb.as_markup())
+        await message.answer(text=texts[user_language][fetch_tickets_result.message_key],
+                             reply_markup=has_more_kb.as_markup())
     else:
         await message.answer(text=texts[user_language][fetch_tickets_result.message_key])
 
@@ -49,7 +51,7 @@ async def process_ticket_answer(message: types.Message, state: FSMContext, user_
 
         result = await admin_service.save_support_answer(ticket_id, message.text, message.from_user.id)
         if result.success:
-            answer = texts[user_language]['support_answer'].format(ticket_id = ticket_id, answer = message.text)
+            answer = texts[user_language]['support_answer'].format(ticket_id=ticket_id, answer=message.text)
             rating_kb = await rate_support_answer_kb(ticket_id)
             await bot.send_message(chat_id=ticket_user_id, text=answer,
                                    reply_markup=rating_kb.as_markup(), parse_mode='HTML')
@@ -90,8 +92,8 @@ async def handle_ticket_admin_callback(callback: CallbackQuery, state: FSMContex
             if fetch_tickets_result.success:
                 await send_tickets(callback.message, fetch_tickets_result, user_language, texts)
                 has_more_kb = load_three_tickets_kb(fetch_tickets_result.data['last_ticket_id'], "✅") if \
-                fetch_tickets_result.data[
-                    'has_more'] else None
+                    fetch_tickets_result.data[
+                        'has_more'] else None
                 await callback.message.answer(text=texts[user_language][fetch_tickets_result.message_key],
                                               reply_markup=has_more_kb)
             else:
@@ -136,7 +138,8 @@ async def handle_remove_admin_command(message: types.Message, user_language: str
 
 
 @router.message(Command("ban"))
-async def handle_ban_user_command(message: types.Message, user_language: str, texts: dict, access_service: AccessService):
+async def handle_ban_user_command(message: types.Message, user_language: str, texts: dict,
+                                  access_service: AccessService):
     """
     Обрабатывает команду /ban для блокировки пользователя.
     """
@@ -153,7 +156,8 @@ async def handle_ban_user_command(message: types.Message, user_language: str, te
 
 
 @router.message(Command("bans_history"))
-async def handle_bans_history_command(message: types.Message, user_language: str, texts: dict, admin_service: AdminService):
+async def handle_bans_history_command(message: types.Message, user_language: str, texts: dict,
+                                      admin_service: AdminService):
     """
     Обрабатывает команду /bans_history для вывода истории банов.
     """
@@ -187,7 +191,8 @@ async def handle_unban_user_callback(callback: CallbackQuery, user_language: str
 
 
 @router.callback_query(F.data.startswith("bans"))
-async def handle_load_bans_callback(callback: CallbackQuery, user_language: str, texts: dict, admin_service: AdminService):
+async def handle_load_bans_callback(callback: CallbackQuery, user_language: str, texts: dict,
+                                    admin_service: AdminService):
     """
     Обрабатывает callback-запрос для дозагрузки списка банов.
     """
@@ -198,7 +203,8 @@ async def handle_load_bans_callback(callback: CallbackQuery, user_language: str,
         await send_bans(callback.message, fetch_bans_result, user_language, texts)
         has_more_kb = load_three_bans_kb(fetch_bans_result.data['last_ban_id'], "✅") if fetch_bans_result.data[
             'has_more'] else None
-        await callback.message.answer(text=texts[user_language][fetch_bans_result.message_key], reply_markup=has_more_kb)
+        await callback.message.answer(text=texts[user_language][fetch_bans_result.message_key],
+                                      reply_markup=has_more_kb)
     else:
         await callback.message.answer(text=texts[user_language][fetch_bans_result.message_key])
     await callback.answer()

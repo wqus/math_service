@@ -61,7 +61,6 @@ def init_log():
     root_logger.propagate = True
     formatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 
-    # Хендлер для записи в файл с ограничением размера и количества лог-файлов
     file_handler = RotatingFileHandler(
         'bot/logs/bot.log',
         maxBytes=10 * 1024 * 1024,
@@ -72,7 +71,6 @@ def init_log():
     file_handler.setFormatter(formatter)
     root_logger.addHandler(file_handler)
 
-    # Хендлер для вывода в консоль
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
@@ -96,7 +94,6 @@ async def init_redis():
             health_check_interval=30,
             socket_timeout=4
         )
-        # ДОБАВЛЕНО: проверка соединения
         await redis_client.ping()
         logger.info("Redis клиент успешно подключен")
         return redis_client
@@ -122,7 +119,6 @@ async def startup(bot: Bot):
     """
     Выполняет настройку при старте бота.
     """
-    # ДОБАВЛЕНО: логи входа в функцию
     logger.info("=" * 60)
     logger.info("ВЫЗВАНА ФУНКЦИЯ startup")
     logger.info(f"MODE = {MODE}")
@@ -135,7 +131,6 @@ async def startup(bot: Bot):
             await bot.set_webhook(url=WEBHOOK_URL_FULL_PATH)
             logger.info(f"Вебхук успешно установлен на {WEBHOOK_URL_FULL_PATH}")
 
-            # ДОБАВЛЕНО: проверка что вебхук реально установлен
             webhook_info = await bot.get_webhook_info()
             logger.info(f"Проверка: текущий вебхук = {webhook_info.url}")
         except Exception as e:
@@ -149,7 +144,6 @@ async def shutdown(bot: Bot, dp, redis_client):
     """
     Выполняет завершение работы бота.
     """
-    # ДОБАВЛЕНО: логи входа в функцию
     logger.info("=" * 60)
     logger.info("ВЫЗВАНА ФУНКЦИЯ shutdown")
     logger.info("=" * 60)

@@ -1,5 +1,8 @@
+from unittest.mock import patch, AsyncMock, MagicMock
+
 import pytest
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from bot.repositories.support_messages_repository import TicketRepository
 
@@ -216,3 +219,54 @@ async def test_save_ticket_rating_success(engine):
         ticket = result.mappings().fetchone()
 
         assert ticket["rating"] == 5
+
+
+@pytest.mark.asyncio
+async def test_create_support_message_error():
+    repo = TicketRepository(engine=AsyncMock())
+
+    mock_ctx = AsyncMock()
+    mock_ctx.__aenter__ = AsyncMock(side_effect=SQLAlchemyError("DB error"))
+    repo.engine.begin = MagicMock(return_value=mock_ctx)
+
+    with patch('bot.repositories.support_messages_repository.text'):
+        with pytest.raises(SQLAlchemyError):
+            await repo.create_support_message(123, "test")
+
+@pytest.mark.asyncio
+async def test_update_ticket_with_answer_error():
+    repo = TicketRepository(engine=AsyncMock())
+
+    mock_ctx = AsyncMock()
+    mock_ctx.__aenter__ = AsyncMock(side_effect=SQLAlchemyError("DB error"))
+    repo.engine.begin = MagicMock(return_value=mock_ctx)
+
+    with patch('bot.repositories.support_messages_repository.text'):
+        with pytest.raises(SQLAlchemyError):
+            await repo.update_ticket_with_answer(123, "test", 321)
+
+
+@pytest.mark.asyncio
+async def test_update_ticket_with_answer_error():
+    repo = TicketRepository(engine=AsyncMock())
+
+    mock_ctx = AsyncMock()
+    mock_ctx.__aenter__ = AsyncMock(side_effect=SQLAlchemyError("DB error"))
+    repo.engine.begin = MagicMock(return_value=mock_ctx)
+
+    with patch('bot.repositories.support_messages_repository.text'):
+        with pytest.raises(SQLAlchemyError):
+            await repo.update_ticket_with_answer(123, "test", 321)
+
+
+@pytest.mark.asyncio
+async def test_fetch_open_tickets_error():
+    repo = TicketRepository(engine=AsyncMock())
+
+    mock_ctx = AsyncMock()
+    mock_ctx.__aenter__ = AsyncMock(side_effect=SQLAlchemyError("DB error"))
+    repo.engine.begin = MagicMock(return_value=mock_ctx)
+
+    with patch('bot.repositories.support_messages_repository.text'):
+        with pytest.raises(SQLAlchemyError):
+            await repo.fetch_open_tickets()
