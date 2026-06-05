@@ -8,7 +8,7 @@ https://github.com/user-attachments/assets/6bc34551-1dc5-44e9-a136-75b8bf8805fb
 [![Docker](https://img.shields.io/badge/Docker-✓-blue)](https://www.docker.com/)
 [![License MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Coverage](https://img.shields.io/badge/coverage-50%25-yellow)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-70%25-green)](tests/)
 
 **Telegram-бот для решения математических задач**  
 Поддерживает примеры, уравнения, неравенства, построение графиков, генерация похожих примеров и пошаговых решений, freemium модель, оплата с помощью Telegram Stars, RBAC.
@@ -212,6 +212,7 @@ math_service/
 └── requirements.txt
 
 ### Тестирование и линтинг
+Покрытие - 70%
 
 ### Запуск тестов
 
@@ -220,9 +221,6 @@ pytest tests/ -v                    # все тесты
 pytest tests/test_services/ -v      # только сервисы
 pytest --cov=bot --cov-report=term  # с отчётом о покрыти
 
- Планы развития
-
-🔜 Нагрузочное тестирование (проверка под высоким RPS)
 
  Участие в разработке
 Чтобы предложить улучшение:
