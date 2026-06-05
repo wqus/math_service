@@ -1,5 +1,6 @@
-# Math Helper
+https://github.com/user-attachments/assets/321883a9-2c62-44ac-9839-beda69643f1d
 
+# Math Helper
 <div align="center">
 
 ### Telegram-бот для решения математических задач с AI-помощником
@@ -199,7 +200,7 @@ Redis
 
 ---
 
-# 📸 Демонстрация
+# Демонстрация
 
 > Скриншоты работы бота
 
@@ -277,7 +278,7 @@ pytest --cov=src --cov-report=term-missing
 
 ---
 
-# 🛠 Технологический стек
+# Технологический стек
 
 ### Backend
 
