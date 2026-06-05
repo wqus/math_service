@@ -1,241 +1,340 @@
-https://github.com/user-attachments/assets/6bc34551-1dc5-44e9-a136-75b8bf8805fb
-
-
 # Math Helper
 
-[![Python Version](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
-[![Telegram Bot API](https://img.shields.io/badge/Telegram%20Bot%20API-7.0-blue)](https://core.telegram.org/bots/api)
-[![Docker](https://img.shields.io/badge/Docker-✓-blue)](https://www.docker.com/)
-[![License MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Coverage](https://img.shields.io/badge/coverage-70%25-green)](tests/)
+<div align="center">
 
-**Telegram-бот для решения математических задач**  
-Поддерживает примеры, уравнения, неравенства, построение графиков, генерация похожих примеров и пошаговых решений, freemium модель, оплата с помощью Telegram Stars, RBAC.
+### Telegram-бот для решения математических задач с AI-помощником
 
----
+Решение примеров, уравнений, неравенств, построение графиков, генерация похожих задач и пошаговых решений.
 
-## Оглавление
-- [Возможности](#-возможности)
-- [Демонстрация](#-демонстрация)
-- [Быстрый старт для пользователя](#-быстрый-старт-для-пользователя)
-- [Установка и запуск для разработчика](#-установка-и-запуск-для-разработчика)
-- [Примеры использования](#-примеры-использования)
-- [Конфигурация](#-конфигурация)
-- [Команды бота](#-команды-бота)
-- [Технологии](#-технологии)
-- [Структура проекта](#-структура-проекта)
-- [Тестирование и линтинг](#-тестирование-и-линтинг)
-- [Планы развития](#-планы-развития)
-- [Участие в разработке](#-участие-в-разработке)
-- [Лицензия](#-лицензия)
+**Production-ready сервис с собственной монетизацией, системой ролей, CI/CD и LLM-интеграцией.**
+
+[![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)](https://www.python.org/)
+[![aiogram](https://img.shields.io/badge/aiogram-3.x-blue)](https://docs.aiogram.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql)](https://postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-red?logo=redis)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/Docker-enabled-blue?logo=docker)](https://docker.com/)
+[![Coverage](https://img.shields.io/badge/Test_Coverage-70%25-brightgreen)](tests/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+### Попробовать
+
+**Telegram:** https://t.me/math4students_bot
+
+</div>
 
 ---
 
-## Возможности
+# Возможности
 
-### Математические функции
-- Решение **арифметических примеров** (например, `5+3` → `8`)
-- Решение **уравнений с одной переменной** (через `x`)
-- Решение **одномерных неравенств**
-- **Построение графиков функций** (с поддержкой `sin, cos, tan, sqrt, log, abs, factorial`)
-- **Вычисление выражений** с использованием SymPy
+## Решение математических задач
 
-### Дополнительно
-- **История запросов** с постраничной навигацией
-- **Бесплатные попытки** с лимитом и восстановлением через 24 часа
-- **Премиум‑подписка** через Telegram Stars
-  - 1 месяц — 250⭐
-  - 3 месяца — 650⭐
-  - 12 месяцев — 2500⭐
-- **Поддержка пользователей** (создание тикетов, ID вида `SUP-1`)
-- **Двуязычность** (русский / английский) – выбор языка при `/start`
-- **Административные инструменты** (модерация, просмотр тикетов, баны)
-- **Инструменты для владельца** (выдать/забрать роль админа)
-- **Генерация похожих примеров с помощью LLM** (модерация, просмотр тикетов, баны)
-- **Генерация пошаговых решений с помощью LLM** (модерация, просмотр тикетов, баны)
+Поддерживаются:
 
+* Арифметические выражения
+* Уравнения с переменной `x`
+* Неравенства
+* Вычисление сложных выражений
+* Построение графиков функций
+* Символьные вычисления через SymPy
+
+### Примеры
+
+```text
+5 + 3
+```
+
+```text
+2*x - 5 = 0
+```
+
+```text
+x² - 4 > 0
+```
+
+```text
+sin(x) / x
+```
 
 ---
 
-## Демонстрация
+## AI-функции
+
+Math Helper использует локальную LLM-инфраструктуру.
+
+Пользователь может:
+
+* Получить пошаговое решение задачи
+* Сгенерировать похожие примеры
+* Получить объяснение решения
+* Улучшить понимание темы
+
+Особенности:
+
+* Ollama
+* Локальная модель
+* Приватное соединение через Tailscale
+* Отсутствие зависимости от внешних AI API
+
+---
+
+## Freemium-модель
+
+В проект встроена полноценная система монетизации через Telegram Stars.
+
+### Бесплатный доступ
+
+* Ограниченное количество запросов
+* Автоматическое восстановление лимита через 24 часа
+
+### Premium
+
+* Безлимитное использование
+* Доступ к AI-функциям
+* Приоритетное обслуживание
+
+Поддерживаемые тарифы:
+
+| Период     | Стоимость |
+| ---------- | --------- |
+| 1 месяц    | 250 ⭐     |
+| 3 месяца   | 650 ⭐     |
+| 12 месяцев | 2500 ⭐    |
+
+---
+
+## 👥 Система ролей (RBAC)
+
+В проекте реализована полноценная ролевая модель.
+
+### User
+
+* Решение задач
+* История запросов
+
+### Premium
+
+* AI-возможности
+* Повышенные лимиты
+
+### Admin
+
+* Работа с тикетами
+* Блокировка пользователей
+* Модерация
+
+### Owner
+
+* Управление администраторами
+* Полный контроль системы
+
+---
+
+# Архитектура
+
+Проект построен по принципам Clean Architecture.
+
+```text
+Telegram
+    │
+    ▼
+Handlers
+    │
+    ▼
+Services
+    │
+    ▼
+Repositories
+    │
+    ▼
+PostgreSQL
+```
+
+Дополнительно:
+
+```text
+Redis
+├── Cache
+├── FSM Storage
+├── Rate Limiting
+└── Temporary Data
+```
+
+---
+
+# Production Features
+
+Что реализовано как в реальном production-проекте:
+
+✅ Clean Architecture
+
+✅ Dependency Injection
+
+✅ PostgreSQL + SQLAlchemy 2.0 Async
+
+✅ Redis Caching
+
+✅ Rate Limiting
+
+✅ Cursor Pagination
+
+✅ Docker
+
+✅ Docker Compose
+
+✅ Alembic Migrations
+
+✅ GitHub Actions CI/CD
+
+✅ Structured Logging
+
+✅ Error Handling
+
+✅ RBAC
+
+✅ Unit Tests
+
+✅ Integration Tests
+
+✅ Linux VPS Deployment
+
+---
+
+# 📸 Демонстрация
+
+> Скриншоты работы бота
+
 <img width="371" height="587" alt="Screenshot_1" src="https://github.com/user-attachments/assets/50e6e28c-e147-4001-af0d-2bc749a0747f" />
+
 <img width="374" height="871" alt="Screenshot_2" src="https://github.com/user-attachments/assets/069fc1ee-ecc4-4106-ac87-2993d73d10fa" />
+
 <img width="372" height="826" alt="Screenshot_3" src="https://github.com/user-attachments/assets/75df662a-374f-4b6d-aa0b-71b63ddbc08f" />
+
 <img width="369" height="680" alt="Screenshot_4" src="https://github.com/user-attachments/assets/b8d3f353-aa6b-429c-8144-53b0c3815ead" />
+
 <img width="380" height="694" alt="Screenshot_5" src="https://github.com/user-attachments/assets/e0fccdfe-e154-4493-9e85-45605c3f6e7a" />
+
 <img width="372" height="153" alt="Screenshot_6" src="https://github.com/user-attachments/assets/32e73fd3-84ed-4068-b1c9-c70dc0f772a9" />
+
 <img width="373" height="363" alt="Screenshot_7" src="https://github.com/user-attachments/assets/882b67dd-511a-429c-b312-544854fcc6f7" />
 
+---
 
-## Быстрый старт для пользователя
+# Быстрый старт
 
-1. Найдите бота в Telegram: **[@math4students_bot](https://t.me/math4students_bot)** 
-2. Отправьте `/start` и выберите язык (RU / EN)
-3. Используйте команды или текстовые запросы:
+## Docker
 
-   | Что сделать | Команда / текст |
-   |-------------|----------------|
-   | Решить пример | просто введите `5+3` или `2*8-1` |
-   | Решить уравнение | `2*x + 5 = 0` |
-   | Решить неравенство | `x^2 - 5x + 6 > 0` |
-   | Построить график | `График📈` (или `Plot📈`) → затем ввести функцию |
-   | Показать историю | `История📖` / `History📖` |
-   | Правила записи | `Примечание📃` / `Note📃` |
-   | Список умений | `Умения🤓` / `Skills🤓` |
-   | Премиум | `Премиум🧠` / `Premium🧠` |
-   | Поддержка | `Поддержка✉` / `Support✉` |
+```bash
+git clone https://github.com/wqus/math_service.git
+
+cd math_service
+
+cp .env.example .env
+
+docker compose up --build
+```
 
 ---
 
-## Установка и запуск для разработчика
+## Локальный запуск
 
-### Требования
-- Python 3.11+
-- PostgreSQL 15+
-- Redis 7+
-- Docker и Docker Compose (опционально)
-
-### 1. Клонирование репозитория
 ```bash
 git clone https://github.com/wqus/math_service.git
+
 cd math_service
-2. Настройка окружения
-bash
-cp .env.example .env
-# Отредактируйте .env (см. раздел Конфигурация)
-3. Запуск через Docker (рекомендуется)
-bash
-docker-compose up --build
-# Для фонового режима: docker-compose up -d
-4. Локальный запуск (без Docker)
-bash
-python -m venv venv
-source venv/bin/activate  # или venv\Scripts\activate на Windows
+
+python -m venv .venv
+
+source .venv/bin/activate
+
 pip install -r requirements.txt
+
 alembic upgrade head
+
 python run.py
-📝 Примеры использования
-Ввод пользователя	Ответ бота (сокращённо)
-5+3	8
-2*x - 5 = 0	x = 2.5
-x^2 - 4 > 0	(-∞, -2) ∪ (2, ∞)
-График📈 → sin(x)/x	Изображение графика на [-10, 10]
-История📖	Список последних запросов с ответами
-Примечание📃	Правила записи (умножение *, степень ** или ^, градусы в скобках)
-Премиум🧠	Меню выбора подписки за Telegram Stars
+```
 
+---
 
-⚙️ Конфигурация
-Файл .env содержит следующие переменные:
+# Тестирование
 
-Переменная	Описание
-MODE=
+Покрытие проекта:
 
-TOKEN=
+```text
+70%+
+```
 
-LOCAL_WEBHOOK_HOST=
-LOCAL_WEBHOOK_PORT=
-
-WEBHOOK_PATH=
-WEBHOOK_BASE_URL=
-
-REDIS_HOST =
-
-POSTGRES_HOST=
-POSTGRES_PASSWORD=
-POSTGRES_DB=
-POSTGRES_USER=
-
-Команды бота
-Бот понимает как команды со слешем, так и текстовые сообщения на русском/английском.
-
-Команда (RU)	Команда (EN)	Описание
-/start	/start	Приветствие и выбор языка
-Умения🤓	Skills🤓	Список решаемых типов задач
-Примечание📃	Note📃	Правила записи выражений
-График📈	Plot📈	Запуск построения графика
-История📖	History📖	Показать историю запросов
-Премиум🧠	Premium🧠	Информация о подписке и покупка
-Поддержка✉	Support✉	Отправить сообщение в поддержку
-Любое выражение	–	Автоматическое решение (пример, уравнение, неравенство)
-
-Команды для админов:
-/ban
-/bans_history
-/tickets
-
-Команда для владельца:
-/add_admin
-/remove_admin
-
-callback - команды:
-unban
-ответ на тикет
-
-Технологии
-Python 3.11+
-
-aiogram 3.x – асинхронный фреймворк
-
-PostgreSQL + SQLAlchemy 2.0 (ORM)
-
-Alembic – миграции
-
-Redis – кеширование, FSM storage, rate limiting
-
-SymPy / NumPy / Matplotlib – математика и графика
-
-Docker – контейнеризация
-
-pytest / pytest-asyncio / pytest-cov – юнит-тесты (покрытие ~30%, в процессе повышения)
-
-📁 Структура проекта
-text
-math_service/
-├── bot/
-│   ├── handlers/            # Обработчики команд и текстовых сообщений
-│   ├── services/            # Бизнес-логика: решение, графики, платежи
-│   ├── repositories/        # Работа с БД (пользователи, история, тикеты)
-│   ├── database/            # SQLAlchemy модели, сессии
-│   ├── middlewares/         # i18n, антиспам, логирование
-│   ├── keyboards/           # Inline и Reply клавиатуры
-│   ├── states/              # FSM состояния (для графиков, поддержки)
-│   └── locales/             # Файлы переводов (RU/EN)
-├── alembic/                 # Миграции Alembic
-├── .github/workflows/       # CI/CD (GitHub Actions)
-├── tests/                   # Тесты (планируется)
-├── run.py                   # Точка входа
-├── Dockerfile
-├── docker-compose.yml
-├── .env.example
-└── requirements.txt
-
-### Тестирование и линтинг
-Покрытие - 70%
-
-### Запуск тестов
+Запуск тестов:
 
 ```bash
-pytest tests/ -v                    # все тесты
-pytest tests/test_services/ -v      # только сервисы
-pytest --cov=bot --cov-report=term  # с отчётом о покрыти
+pytest
+```
 
+или
 
- Участие в разработке
-Чтобы предложить улучшение:
+```bash
+pytest --cov=src --cov-report=term-missing
+```
 
-Сделайте fork репозитория
+---
 
-Создайте ветку: git checkout -b feature/ваша-идея
+# 🛠 Технологический стек
 
-Внесите изменения и сделайте коммиты (следуйте Conventional Commits)
+### Backend
 
-Запушьте ветку: git push origin feature/ваша-идея
+* Python 3.12
+* aiogram 3.x
+* AsyncIO
+* SQLAlchemy 2.0 Async
+* Pydantic v2
 
-Откройте Pull Request в ветку main
+### Databases
 
-Пожалуйста, ознакомьтесь с CONTRIBUTING.md и CODE_OF_CONDUCT.md (будут добавлены).
+* PostgreSQL
+* Redis
+* Alembic
 
-📄 Лицензия
-Проект распространяется под лицензией MIT. Подробности в файле LICENSE.
+### AI
+
+* Ollama
+* Local LLM
+* Tailscale
+
+### Infrastructure
+
+* Docker
+* Docker Compose
+* GitHub Actions
+* Linux VPS
+
+### Testing
+
+* Pytest
+* Integration Tests
+* Coverage
+
+---
+
+# Что было интересно реализовать
+
+* Telegram Stars платежи
+* Локальную LLM-инфраструктуру
+* Rate Limiting через Redis
+* Ticket System
+* RBAC
+* Cursor Pagination
+* Полностью асинхронную архитектуру
+* Автоматический CI/CD pipeline
+
+---
+
+# Contributions
+
+Pull Requests приветствуются.
+
+Если нашли баг или хотите предложить улучшение — создайте Issue.
+
+---
+
+# 📄 License
+
+Проект распространяется под лицензией MIT.
